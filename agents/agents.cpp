@@ -1,7 +1,7 @@
 //Yuan Yao, MAT201B, Feb 6th, yuanyao00@ucsb.edu
-
-
 #include "allocore/io/al_App.hpp"
+#include "Cuttlebone/Cuttlebone.hpp"
+#include "agents_common.hpp"
 using namespace al;
 using namespace std;
 
@@ -168,11 +168,16 @@ struct Boid{
 };
 
 struct MyApp : App {
+
+  State* state = new State;
+  cuttlebone::Maker<State> maker;
+
+
   Material material;
   Light light;
   bool simulate = true;
   vector<Boid> boids;
-  MyApp() {
+  MyApp(): maker("127.0.0.1"){
     addSphere(sphere, sphereRadius);
     sphere.generateNormals();
     light.pos(0, 0, 0);              // place the light
@@ -193,6 +198,10 @@ struct MyApp : App {
       b.flock(boids);
       b.update();
     }
+
+    maker.set(*state);
+    for (unsigned i = 0; i < boids.size(); i++)
+       state->position[i] = boids[i].location;
   }
 
   void onDraw(Graphics& g) {
@@ -232,4 +241,8 @@ struct MyApp : App {
   }
 };
 
-int main() { MyApp().start(); }
+int main() {   
+  MyApp app;
+  app.maker.start();
+  app.start(); }
+

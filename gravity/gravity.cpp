@@ -1,5 +1,7 @@
 //Yuan Yao, MAT201B, Feb 6th, yuanyao00@ucsb.edu
 #include "allocore/io/al_App.hpp"
+#include "Cuttlebone/Cuttlebone.hpp"
+#include "gravity_common.hpp"
 using namespace al;
 using namespace std;
 
@@ -47,8 +49,10 @@ struct MyApp : App {
   bool simulate = true;
 
   vector<Particle> particle;
+  State* state = new State;
+  cuttlebone::Maker<State> maker;
 
-  MyApp() {
+  MyApp() : maker("127.0.0.1"){
     addSphere(sphere, sphereRadius);
     sphere.generateNormals();
     light.pos(0, 0, 0);              // place the light
@@ -109,6 +113,11 @@ struct MyApp : App {
     for (auto& p : particle) p.acceleration.zero();
 
 
+    maker.set(*state);
+    for (unsigned i = 0; i < particle.size(); i++)
+       state->position[i] = particle[i].position;
+
+
   }
 
   void onDraw(Graphics& g) {
@@ -148,4 +157,7 @@ struct MyApp : App {
   }
 };
 
-int main() { MyApp().start(); }
+int main() { 
+  MyApp app;
+  app.maker.start();
+  app.start(); }
