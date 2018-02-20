@@ -2,8 +2,12 @@
 #include "allocore/io/al_App.hpp"
 #include "Cuttlebone/Cuttlebone.hpp"
 #include "agents_common.hpp"
+#include "Gamma/Delay.h"
+#include "Gamma/Filter.h"
+#include "Gamma/Oscillator.h"
 using namespace al;
 using namespace std;
+using namespace gam;
 
 // some of these must be carefully balanced; i spent some time turning them.
 // change them however you like, but make a note of these settings.
@@ -169,6 +173,12 @@ struct Boid{
 
 struct MyApp : App {
 
+
+  Accum<> tmr;  // Timer for triggering sound
+  SineD<> src;  // Sine grain
+  Delay<> delay;  // Delay line
+  OnePole<> lpf;
+
   State* state = new State;
   cuttlebone::Maker<State> maker;
 
@@ -178,6 +188,18 @@ struct MyApp : App {
   bool simulate = true;
   vector<Boid> boids;
   MyApp(): maker("127.0.0.1"){
+    delay.maxDelay(0.2);
+
+    tmr.period(4);
+    tmr.phaseMax();
+
+    // Configure a short cosine grain
+    src.set(1000, 0.8, 0.04, 0.25);
+
+    // Set up low-pass filter
+    lpf.type(gam::LOW_PASS);
+    lpf.freq(2000);
+
     addSphere(sphere, sphereRadius);
     sphere.generateNormals();
     light.pos(0, 0, 0);              // place the light
@@ -211,10 +233,27 @@ struct MyApp : App {
     for (auto& b : boids) b.draw(g);
   }
 
-  void onSound(AudioIO& io) {
-    while (io()) {
-      io.out(0) = 0;
-      io.out(1) = 0;
+  void onSound(AudioIOData& io) {
+    gam::Sync::master().spu(audioIO().fps());
+    while(io()){
+
+      if(tmr()) src.reset();
+
+      float s = src();
+
+      // Read the end of the delay line to get the echo
+      float echo = delay();
+
+      // Low-pass filter and attenuate the echo
+      echo = lpf(echo) * 0.8;
+
+      // Write sum of current sample and echo to delay line
+      delay(s + echo);
+
+      // Finally output sum of dry and wet signals
+      s += echo;
+    
+      io.out(0) = io.out(1) = s;
     }
   }
 
