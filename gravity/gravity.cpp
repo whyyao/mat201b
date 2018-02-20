@@ -1,7 +1,6 @@
 //Yuan Yao, MAT201B, Feb 6th, yuanyao00@ucsb.edu
 #include "allocore/io/al_App.hpp"
 #include "Cuttlebone/Cuttlebone.hpp"
-#include "Gamma/Delay.h"
 #include "Gamma/Filter.h"
 #include "Gamma/Oscillator.h"
 #include "gravity_common.hpp"
@@ -28,6 +27,24 @@ Mesh sphere;  // global prototype; leave this alone
 // helper function: makes a random vector
 Vec3f r() { return Vec3f(rnd::uniformS(), rnd::uniformS(), rnd::uniformS()); }
 
+// Phasor and Sawtooth are from the class example
+struct Phasor {
+  float phase = 0, increment = 0.001;
+  void frequency(float hz, float sampleRate) { increment = hz / sampleRate; }
+  float getNextSample() {
+    float returnValue = phase;
+    phase += increment;
+    if (phase > 1) phase -= 1;
+    return returnValue;
+  }
+  float operator()() { return getNextSample(); }
+};
+
+struct Sawtooth : Phasor {
+  float getNextSample() { return 2 * Phasor::getNextSample() - 1; }
+  float operator()() { return getNextSample(); }
+};
+
 struct Particle { 
   Vec3f position, velocity, acceleration;
   Color c;
@@ -49,11 +66,6 @@ struct Particle {
 
 struct MyApp : App{
 
-  Accum<> tmr;  // Timer for triggering sound
-  SineD<> src;  // Sine grain
-  Delay<> delay;  // Delay line
-  OnePole<> lpf;
-
   Material material;
   Light light;
   bool simulate = true;
@@ -62,19 +74,10 @@ struct MyApp : App{
   State* state = new State;
   cuttlebone::Maker<State> maker;
 
+  Sawtooth saw;
+  Phasor frequency;
+
   MyApp() : maker("127.0.0.1"){
-    delay.maxDelay(0.2);
-
-    tmr.period(4);
-    tmr.phaseMax();
-
-    // Configure a short cosine grain
-    src.set(1000, 0.8, 0.04, 0.25);
-
-    // Set up low-pass filter
-    lpf.type(gam::LOW_PASS);
-    lpf.freq(2000);
-
     
     addSphere(sphere, sphereRadius);
     sphere.generateNormals();
@@ -151,29 +154,27 @@ struct MyApp : App{
     for (auto p : particle) p.draw(g);
   }
 
+
+
   void onSound(AudioIOData& io) {
-    gam::Sync::master().spu(audioIO().fps());
-    while(io()){
-
-      if(tmr()) src.reset();
-
-      float s = src();
-
-      // Read the end of the delay line to get the echo
-      float echo = delay();
-
-      // Low-pass filter and attenuate the echo
-      echo = lpf(echo) * 0.8;
-
-      // Write sum of current sample and echo to delay line
-      delay(s + echo);
-
-      // Finally output sum of dry and wet signals
-      s += echo;
-    
-      io.out(0) = io.out(1) = s;
+    while (io()) {
+      saw.frequency(200 + 20 * frequency(), 24100);
+      float s = saw() * 0.3;
+      for (unsigned i = 0; i < particle.size(); ++i)
+      for (unsigned j = 1 + i; j < particle.size(); ++j) {
+        Particle& a = particle[i];
+        Particle& b = particle[j];
+        //collide if the positions are equal
+        Vec3f diff = (b.position - a.position);
+        if (diff.mag() < (2*sphereRadius)){
+                  io.out(0) = s;
+                  io.out(1) = s;
+                  //cout << "collide" << endl;
+          }     
+        }
+      }
     }
-  }
+    
 
   void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
     switch (k.key()) {
