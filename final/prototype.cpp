@@ -4,7 +4,7 @@
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 50;     // try 2, 5, 50, and 5000
+unsigned particleCount = 200;     // try 2, 5, 50, and 5000
 double maximumAcceleration = 30;  // prevents explosion, loss of particles
 double initialRadius = 50;        // initial condition
 double initialSpeed = 50;         // initial condition
@@ -27,7 +27,7 @@ struct Planet{
   Planet(){
     // acceleration = Vec3f(0,0,0);
     acceleration = Vec3f(0,0,0);
-    velocity = Vec3f(0,0,0);
+    velocity = r();
     location = (r()*200).normalize(200);
     rad = 3.0;
     maxspeed = 4;
@@ -39,9 +39,12 @@ struct Planet{
   void update(){
     this->velocity += this->acceleration;
     if (velocity.mag() > maxspeed){
-          velocity.normalize(maxspeed);
+      velocity.normalize(maxspeed);
     }
     this->location += this->velocity;
+    if (location.mag() > 200){
+      location = location.normalize(200);
+    }
     acceleration.zero(); 
   }
 
@@ -73,7 +76,7 @@ struct MyApp : App {
     addSphere(sphere, sphereRadius);
     sphere.generateNormals();
     light.pos(0, 0, 0);              // place the light
-    nav().pos(0, 0, 0);             // place the viewer
+    nav().pos(0, 0, 100);             // place the viewer
     lens().far(400);                 // set the far clipping plane
     boids.resize(particleCount);  // make all the particles
     background(Color(0.07));
