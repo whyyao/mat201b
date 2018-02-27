@@ -1,51 +1,65 @@
 //Yuan Yao, MAT201B, Feb 29th, yuanyao00@ucsb.edu
 #include "allocore/io/al_App.hpp"
 #include "Cuttlebone/Cuttlebone.hpp"
+#include <cmath> 
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 200;     // try 2, 5, 50, and 5000
-double maximumAcceleration = 30;  // prevents explosion, loss of particles
-double initialRadius = 50;        // initial condition
-double initialSpeed = 50;         // initial condition
-double gravityFactor = 1e6;       // see Gravitational Constant
-double timeStep = 0.0625;         // keys change this value for effect
-double scaleFactor = 0.1;         // resizes the entire scene
-double sphereRadius = 3;  // increase this to make collisions more frequent
-double springConstant = 80;
+unsigned particleCount = 5;   
+double maximumAcceleration = 10;  
+double sphereRadius = 30;  
+double placeholderSize = 100;
+float scaleFactor = 0.1;   
 
-Mesh sphere;  // global prototype; leave this alone
+Mesh sphere;  
 
-// helper function: makes a random vector
+// helper to make random
 Vec3f r() { return Vec3f(rnd::uniformS(), rnd::uniformS(), rnd::uniformS()); }
 
 struct Planet{
   Vec3f location, velocity, acceleration;
   float maxspeed, maxforce, rad;
   Color c;
-
+  float volume;
+  bool myself;
+  Mesh mesh;
+  //default to be a not me planet
   Planet(){
-    // acceleration = Vec3f(0,0,0);
-    acceleration = Vec3f(0,0,0);
     velocity = r();
-    location = (r()*200).normalize(200);
-    rad = 3.0;
+    location = (r()*placeholderSize).normalize(placeholderSize);
+    rad = (rnd::uniformS()*1.5)+sphereRadius;
+    cout<<rnd::uniformS()<<endl;
+    addSphere(mesh, rad);
+    mesh.generateNormals();
     maxspeed = 4;
     maxforce = 0.1;
-    c = HSV(rnd::uniform(), 0.7, 1);
+    c = HSV(0, 0.7, 1);
+    myself = false;
+    volume = 3.14* 4/3 *(rad) *(rad) *(rad);
+  }
+
+  Planet(bool myself){
+    Planet();
+    this->myself = myself;
+
+    if(this->myself == true){
+      c = HSV(200.0/360.0f, 1 , 1);
+    }
+
   }
 
   //Euler method
   void update(){
     this->velocity += this->acceleration;
     if (velocity.mag() > maxspeed){
-      velocity.normalize(maxspeed);
+      velocity = velocity.normalize(maxspeed);
     }
     this->location += this->velocity;
-    if (location.mag() > 200){
-      location = location.normalize(200);
+    if (location.mag() > placeholderSize){
+      location = location.normalize(placeholderSize);
     }
     acceleration.zero(); 
+
   }
 
   void applyForce(Vec3f force){
@@ -56,8 +70,21 @@ struct Planet{
     g.pushMatrix();
     g.translate(location);
     g.color(c);
-    g.draw(sphere);
+    g.draw(mesh);
     g.popMatrix();
+  }
+
+  bool ifCollide(Planet otherPlanet){
+    if((location - otherPlanet.location).mag() <= (rad + otherPlanet.rad)){
+      return true;
+    }
+  return false;
+  }
+
+  void absorb(Planet otherPlanet){
+    volume += otherPlanet.volume;
+    rad = pow((volume *3 /4/3.14),1.0/3);
+    addSphere(mesh,rad);
   }
 
 };
@@ -67,30 +94,51 @@ struct MyApp : App {
   // State* state = new State;
   //cuttlebone::Maker<State> maker;
 
-
   Material material;
   Light light;
-  bool simulate = true;
-  vector<Planet> boids;
-  MyApp(){
-    addSphere(sphere, sphereRadius);
-    sphere.generateNormals();
-    light.pos(0, 0, 0);              // place the light
-    nav().pos(0, 0, 100);             // place the viewer
-    lens().far(400);                 // set the far clipping plane
-    boids.resize(particleCount);  // make all the particles
-    background(Color(0.07));
 
+  vector<Planet> planets;
+  Planet myPlanet = Planet(true);
+
+  MyApp(){
+
+    light.pos(0, 0, 0);         
+    nav().pos(0, 0, 50);        
+    lens().far(400);             
+
+    //addSphere(sphere, sphereRadius);
+    
+    planets.resize(particleCount);  
+
+    background(Color(0.07));
     initWindow();
     initAudio();
   }
 
   void onAnimate(double dt) {
-    // if (!simulate)
-    //   // skip the rest of this function
-    //   return;
-    for (auto& b: boids) {
+
+    for (auto& b: planets) {
       b.update();
+    }
+    myPlanet.update();
+
+    vector<int> deletingPlanet;
+    for(int i = 0; i<planets.size(); i++){
+      for (int j = i + 1;j<planets.size(); j++){
+          if(planets[i].ifCollide(planets[j])){
+            if(planets[i].volume>planets[j].volume){
+              planets[i].absorb(planets[j]);
+              deletingPlanet.push_back(j);
+            }else{
+              planets[j].absorb(planets[i]);
+              deletingPlanet.push_back(i);
+            }
+          }
+      }
+    }
+
+    for(auto index: deletingPlanet){
+      planets.erase(planets.begin()+index);
     }
 
     //maker.set(*state);
@@ -102,34 +150,17 @@ struct MyApp : App {
     material();
     light();
     g.scale(scaleFactor);
-    for (auto& b : boids) b.draw(g);
+    myPlanet.draw(g);
+    for (auto& b : planets) b.draw(g);
+    
   }
 
-  void onSound(AudioIO& io) {
-    while (io()) {
-      io.out(0) = 0;
-      io.out(1) = 0;
-    }
-  }
 
   void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
     switch (k.key()) {
       default:
       case '1':
         // reverse time
-        timeStep *= -1;
-        break;
-      case '2':
-        // speed up time
-        if (timeStep < 1) timeStep *= 2;
-        break;
-      case '3':
-        // slow down time
-        if (timeStep > 0.0005) timeStep /= 2;
-        break;
-      case '4':
-        // pause the simulation
-        simulate = !simulate;
         break;
     }
   }
