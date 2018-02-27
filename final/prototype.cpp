@@ -8,7 +8,7 @@ using namespace std;
 unsigned particleCount = 5;   
 double maximumAcceleration = 10;  
 double sphereRadius = 30;  
-double placeholderSize = 100;
+double placeholderSize = 80;
 float scaleFactor = 0.1;   
 
 Mesh sphere;  
@@ -51,9 +51,9 @@ struct Planet{
   //Euler method
   void update(){
     this->velocity += this->acceleration;
-    if (velocity.mag() > maxspeed){
-      velocity = velocity.normalize(maxspeed);
-    }
+    // if (velocity.mag() > maxspeed){
+    //   velocity = velocity.normalize(maxspeed);
+    // }
     this->location += this->velocity;
     if (location.mag() > placeholderSize){
       location = location.normalize(placeholderSize);
@@ -81,10 +81,18 @@ struct Planet{
   return false;
   }
 
-  void absorb(Planet otherPlanet){
-    volume += otherPlanet.volume;
-    rad = pow((volume *3 /4/3.14),1.0/3);
+  void absorb(Planet& otherPlanet){
+    volume += (otherPlanet.velocity.mag() + velocity.mag())*5;
+    otherPlanet.volume -= (otherPlanet.velocity.mag() + velocity.mag())*5;
+    this->updateRad();
+    otherPlanet.updateRad();
+  }
+
+  void updateRad(){
+    rad = pow((volume *3/4/3.14),1.0/3);
+    mesh.reset();
     addSphere(mesh,rad);
+    mesh.generateNormals();
   }
 
 };
@@ -128,12 +136,18 @@ struct MyApp : App {
           if(planets[i].ifCollide(planets[j])){
             if(planets[i].volume>planets[j].volume){
               planets[i].absorb(planets[j]);
-              deletingPlanet.push_back(j);
+              //deletingPlanet.push_back(j);
             }else{
               planets[j].absorb(planets[i]);
-              deletingPlanet.push_back(i);
+              //deletingPlanet.push_back(i);
             }
           }
+      }
+    }
+
+    for(int i =0 ;i <planets.size(); i++){
+      if (planets[i].volume <= 0){
+        deletingPlanet.push_back(i);
       }
     }
 
