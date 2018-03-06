@@ -5,10 +5,10 @@
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 5;   
+unsigned particleCount = 20;   
 double maximumAcceleration = 10;  
-double sphereRadius = 30;  
-double placeholderSize = 80;
+double sphereRadius = 10;  
+double placeholderSize = 200;
 float scaleFactor = 0.1;   
 
 Mesh sphere;  
@@ -28,7 +28,6 @@ struct Planet{
     velocity = r();
     location = (r()*placeholderSize).normalize(placeholderSize);
     rad = (rnd::uniformS()*1.5)+sphereRadius;
-    cout<<rnd::uniformS()<<endl;
     addSphere(mesh, rad);
     mesh.generateNormals();
     maxspeed = 4;
@@ -38,28 +37,20 @@ struct Planet{
     volume = 3.14* 4/3 *(rad) *(rad) *(rad);
   }
 
-  Planet(bool myself){
-    Planet();
-    this->myself = myself;
-
-    if(this->myself == true){
-      c = HSV(200.0/360.0f, 1 , 1);
-    }
-
+  void setMe(){
+    myself= true;
+    c = HSV(200.0/360.0f, 1 , 1);
+    velocity.zero();
   }
 
   //Euler method
   void update(){
     this->velocity += this->acceleration;
-    // if (velocity.mag() > maxspeed){
-    //   velocity = velocity.normalize(maxspeed);
-    // }
-    this->location += this->velocity;
-    if (location.mag() > placeholderSize){
-      location = location.normalize(placeholderSize);
+    if (velocity.mag() > maxspeed){
+      velocity = velocity.normalize(maxspeed);
     }
-    acceleration.zero(); 
-
+    this->location += this->velocity;
+    location = location.normalize(placeholderSize);
   }
 
   void applyForce(Vec3f force){
@@ -81,15 +72,9 @@ struct Planet{
   return false;
   }
 
-  void absorb(Planet& otherPlanet){
-    volume += (otherPlanet.velocity.mag() + velocity.mag())*5;
-    otherPlanet.volume -= (otherPlanet.velocity.mag() + velocity.mag())*5;
-    this->updateRad();
-    otherPlanet.updateRad();
-  }
-
-  void updateRad(){
-    rad = pow((volume *3/4/3.14),1.0/3);
+  void absorb(Planet otherPlanet){
+    volume += otherPlanet.volume;
+    rad = pow((volume *3 /4/3.14),1.0/3);
     mesh.reset();
     addSphere(mesh,rad);
     mesh.generateNormals();
@@ -106,7 +91,7 @@ struct MyApp : App {
   Light light;
 
   vector<Planet> planets;
-  Planet myPlanet = Planet(true);
+  Planet myPlanet;
 
   MyApp(){
 
@@ -114,9 +99,8 @@ struct MyApp : App {
     nav().pos(0, 0, 50);        
     lens().far(400);             
 
-    //addSphere(sphere, sphereRadius);
-    
-    planets.resize(particleCount);  
+    planets.resize(particleCount);
+    myPlanet.setMe();
 
     background(Color(0.07));
     initWindow();
@@ -136,18 +120,12 @@ struct MyApp : App {
           if(planets[i].ifCollide(planets[j])){
             if(planets[i].volume>planets[j].volume){
               planets[i].absorb(planets[j]);
-              //deletingPlanet.push_back(j);
+              deletingPlanet.push_back(j);
             }else{
               planets[j].absorb(planets[i]);
-              //deletingPlanet.push_back(i);
+              deletingPlanet.push_back(i);
             }
           }
-      }
-    }
-
-    for(int i =0 ;i <planets.size(); i++){
-      if (planets[i].volume <= 0){
-        deletingPlanet.push_back(i);
       }
     }
 
@@ -170,18 +148,31 @@ struct MyApp : App {
   }
 
 
-  void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
-    switch (k.key()) {
-      default:
-      case '1':
-        // reverse time
-        break;
-    }
-  }
+ void onKeyDown(const Keyboard& k){
+
+		// Use a switch to do something when a particular key is pressed
+		switch(k.key()){
+
+		// For printable keys, we just use its character symbol:
+		case 'i': 
+      myPlanet.velocity.y += 2;
+      break;
+    case 'j':
+      myPlanet.velocity.z += 2;
+      break;
+    case 'l':
+      myPlanet.velocity.z -= 2;
+      break;
+    case 'k':
+      myPlanet.velocity.y -= 2;
+      break;
+		}
+	}
 };
 
 int main() {   
   MyApp app;
   //app.maker.start();
   app.start(); }
+
 
