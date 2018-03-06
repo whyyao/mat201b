@@ -5,10 +5,10 @@
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 20;   
+unsigned particleCount = 50;   
 double maximumAcceleration = 10;  
 double sphereRadius = 10;  
-double placeholderSize = 200;
+double placeholderSize = 300;
 float scaleFactor = 0.1;   
 
 Mesh sphere;  
@@ -16,7 +16,7 @@ Mesh sphere;
 // helper to make random
 Vec3f r() { return Vec3f(rnd::uniformS(), rnd::uniformS(), rnd::uniformS()); }
 
-struct Planet{
+struct Planet{  
   Vec3f location, velocity, acceleration;
   float maxspeed, maxforce, rad;
   Color c;
@@ -27,7 +27,7 @@ struct Planet{
   Planet(){
     velocity = r();
     location = (r()*placeholderSize).normalize(placeholderSize);
-    rad = (rnd::uniformS()*1.5)+sphereRadius;
+    rad = (rnd::uniformS()*4)+sphereRadius;
     addSphere(mesh, rad);
     mesh.generateNormals();
     maxspeed = 4;
@@ -39,18 +39,30 @@ struct Planet{
 
   void setMe(){
     myself= true;
+    rad = sphereRadius;
+    mesh.reset();
+    addSphere(mesh, rad);
+    mesh.generateNormals();
     c = HSV(200.0/360.0f, 1 , 1);
     velocity.zero();
+    location = (Vec3f(0,0,200)).normalize(placeholderSize);
   }
 
   //Euler method
-  void update(){
+  void update(Planet my){
     this->velocity += this->acceleration;
     if (velocity.mag() > maxspeed){
       velocity = velocity.normalize(maxspeed);
     }
     this->location += this->velocity;
     location = location.normalize(placeholderSize);
+    if(myself == false){
+      if(my.volume > volume){
+        c = HSV(120/360.0f, 1, 1);
+      }else{
+        c = HSV(0, 0.7, 1);
+      }
+    }
   }
 
   void applyForce(Vec3f force){
@@ -80,6 +92,7 @@ struct Planet{
     mesh.generateNormals();
   }
 
+
 };
 
 struct MyApp : App {
@@ -92,11 +105,13 @@ struct MyApp : App {
 
   vector<Planet> planets;
   Planet myPlanet;
+   bool simulate = true;
 
   MyApp(){
 
+   
     light.pos(0, 0, 0);         
-    nav().pos(0, 0, 50);        
+    nav().pos(0, 0, 70);        
     lens().far(400);             
 
     planets.resize(particleCount);
@@ -109,10 +124,14 @@ struct MyApp : App {
 
   void onAnimate(double dt) {
 
+      if (!simulate)
+      // skip the rest of this function
+      return;
+
     for (auto& b: planets) {
-      b.update();
+      b.update(myPlanet);
     }
-    myPlanet.update();
+    myPlanet.update(myPlanet);
 
     vector<int> deletingPlanet;
     for(int i = 0; i<planets.size(); i++){
@@ -126,6 +145,19 @@ struct MyApp : App {
               deletingPlanet.push_back(i);
             }
           }
+      }
+    }
+
+    
+
+    for(int i = 0; i<planets.size(); i++){
+      if(myPlanet.ifCollide(planets[i])){
+         if(myPlanet.volume>planets[i].volume){
+              myPlanet.absorb(planets[i]);
+              deletingPlanet.push_back(i);
+            }else{
+              simulate = false;
+            }
       }
     }
 
@@ -158,10 +190,12 @@ struct MyApp : App {
       myPlanet.velocity.y += 2;
       break;
     case 'j':
-      myPlanet.velocity.z += 2;
+      //myPlanet.velocity.z += 1;
+      myPlanet.velocity.x += 2;
       break;
     case 'l':
-      myPlanet.velocity.z -= 2;
+      //myPlanet.velocity.z -= 1;
+      myPlanet.velocity.x -= 2;
       break;
     case 'k':
       myPlanet.velocity.y -= 2;
