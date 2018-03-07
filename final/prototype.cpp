@@ -5,7 +5,7 @@
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 50;   
+unsigned particleCount = 100;   
 double maximumAcceleration = 10;  
 double sphereRadius = 10;  
 double placeholderSize = 300;
@@ -26,7 +26,7 @@ struct Planet{
   //default to be a not me planet
   Planet(){
     velocity = r();
-    location = (r()*placeholderSize).normalize(placeholderSize);
+    location = (r()*placeholderSize);
     rad = (rnd::uniformS()*4)+sphereRadius;
     addSphere(mesh, rad);
     mesh.generateNormals();
@@ -55,12 +55,19 @@ struct Planet{
       velocity = velocity.normalize(maxspeed);
     }
     this->location += this->velocity;
-    location = location.normalize(placeholderSize);
+    
     if(myself == false){
+      if(location.mag()>placeholderSize){
+        velocity = -velocity;
+      }
       if(my.volume > volume){
         c = HSV(120/360.0f, 1, 1);
       }else{
         c = HSV(0, 0.7, 1);
+      }
+    }else{
+       if(location.mag()>placeholderSize){
+        location.normalize(placeholderSize);
       }
     }
   }
@@ -111,7 +118,7 @@ struct MyApp : App {
 
    
     light.pos(0, 0, 0);         
-    nav().pos(0, 0, 70);        
+    nav().pos(0, 0, 100);        
     lens().far(400);             
 
     planets.resize(particleCount);
@@ -200,8 +207,15 @@ struct MyApp : App {
     case 'k':
       myPlanet.velocity.y -= 2;
       break;
-		}
+    case 'u':
+      myPlanet.velocity.z += 2;
+      break;
+      		
+    case 'o':
+      myPlanet.velocity.z -= 2;
+      break;
 	}
+ }
 };
 
 int main() {   
