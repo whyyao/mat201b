@@ -58,12 +58,12 @@ struct Planet{
     
     if(myself == false){
       if(location.mag()>placeholderSize){
-        velocity = -velocity;
+          
       }
       if(my.volume > volume){
         c = HSV(120/360.0f, 1, 1);
       }else{
-        c = HSV(0, 0.7, 1);
+        c =  HSV(0, 0.7, 1);
       }
     }else{
        if(location.mag()>placeholderSize){
