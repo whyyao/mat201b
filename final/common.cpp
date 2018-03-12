@@ -8,6 +8,7 @@ using namespace al;
 
 struct State {
   Vec3f position[50];
+  float rad[50];
   Vec3f myPosition;
   bool simulate;
 };

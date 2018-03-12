@@ -63,24 +63,26 @@ struct MyApp : App {
   }
 
   void onAnimate(double dt) {
+    taker.get(*state);
     simulate = state -> simulate;
     //pressed s to pause/resume the game
     if (!simulate)
       return;
 
-    for (unsigned i = 0; i < planets.size(); i++)
+    for (unsigned i = 0; i < planets.size(); i++){
       planets[i].position = state->position[i];
-
+      cout<<"pos: "<<state->position[i]<<endl;
+      planets[i].rad = state->rad[i];
+    }
     myPlanet.position = state->myPosition;
-    cout<<"pos: "<<myPlanet.position;
 
   }
 
   virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m){
-    Rayd r = getPickRay(w, m.x(), m.y());
-    // cout<<"r: "<<r.direction()<<endl;
-    myPlanet.velocity += r.direction();
-    myPlanet.speed = 0.01;
+    // Rayd r = getPickRay(w, m.x(), m.y());
+    // // cout<<"r: "<<r.direction()<<endl;
+    // myPlanet.velocity += r.direction();
+    // myPlanet.speed = 0.01;
   }
 
   void onDraw(Graphics& g) {

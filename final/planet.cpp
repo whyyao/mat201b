@@ -63,14 +63,15 @@ struct Planet{
 
     velocity += acceleration;
 
-    Quatf q;
-    q.fromAxisAngle(speed, velocity);
-    q.normalize();
-    position = q.rotate(position);
 
     //cout<<velocity<<endl;
 
     if(myself == false){
+
+      Quatf q;
+      q.fromAxisAngle(speed, velocity);
+      q.normalize();
+      position = q.rotate(position);
       // if planet volume is greater, change color to red
       // if not, change color to green
       if(my.volume > volume){
@@ -79,29 +80,12 @@ struct Planet{
         c =  HSV(0, 0.7, 1);
       }
     }else{
+      Quatf q;
+      q.fromAxisAngle(speed, velocity);
+      speed *= 0.9;
+      q.normalize();
+      position = q.rotate(position);
       // "me" planet
-      if (velocity.mag() <= 0.001){
-        // if the velocity has becomed to zero, setting acc to zero
-        acceleration.zero();
-      }else{
-        float x,y,z;
-        if(velocity.x<0){
-          x = 0.001;
-        }else{
-          x = -0.001;
-        }
-        if(velocity.y<0){
-          y = 0.001;
-        }else{
-          y = -0.001;
-        }
-        if(velocity.z<0){
-          z = 0.001;
-        }else{
-          z = -0.001;
-        }
-        acceleration = Vec3f(x,y,z);
-      }
     }
   }
 
