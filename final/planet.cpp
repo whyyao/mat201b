@@ -60,10 +60,15 @@ struct Planet{
 
   void update(Planet my){
     //used to rotate and updated the position on the surface
+
+    velocity += acceleration;
+
     Quatf q;
     q.fromAxisAngle(speed, velocity);
     q.normalize();
     position = q.rotate(position);
+
+    //cout<<velocity<<endl;
 
     if(myself == false){
       // if planet volume is greater, change color to red
@@ -75,11 +80,27 @@ struct Planet{
       }
     }else{
       // "me" planet
-      if (velocity.mag()<0){
+      if (velocity.mag() <= 0.001){
         // if the velocity has becomed to zero, setting acc to zero
         acceleration.zero();
       }else{
-        acceleration = Vec3f(-0.005,-0.005,-0.005);
+        float x,y,z;
+        if(velocity.x<0){
+          x = 0.001;
+        }else{
+          x = -0.001;
+        }
+        if(velocity.y<0){
+          y = 0.001;
+        }else{
+          y = -0.001;
+        }
+        if(velocity.z<0){
+          z = 0.001;
+        }else{
+          z = -0.001;
+        }
+        acceleration = Vec3f(x,y,z);
       }
     }
   }
@@ -100,10 +121,20 @@ struct Planet{
     return false;
   }
 
-  void absorb(Planet otherPlanet){
-    volume += otherPlanet.volume;
-    rad = pow((volume *3 /4/3.14),1.0/3);
-    
+  void absorb(Planet& otherPlanet){
+    float absorbtionSpeed = speed+otherPlanet.speed;
+    //cout<<"speed"<<absorbtionSpeed<<endl;
+    float deltaVolume = absorbtionSpeed * 50000;
+    cout<<"devolume"<<deltaVolume<<endl;
+    cout<<"volume"<<volume<<endl;
+    volume += deltaVolume;
+    otherPlanet.volume -= deltaVolume;
+    updateVolume();
+    otherPlanet.updateVolume();
+  }
+
+  void updateVolume(){
+    rad = pow((volume *3 /4 /3.14),1.0/3);
     mesh.reset();
     addSphere(mesh,rad);
     mesh.generateNormals();

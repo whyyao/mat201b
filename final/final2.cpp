@@ -66,49 +66,34 @@ struct MyApp : App {
     if (!simulate)
       return;
 
-    vector<int> deletingPlanet;
     for(int i = 0; i<planets.size(); i++){
       for (int j = i + 1;j<planets.size(); j++){
           if(planets[i].ifCollide(planets[j])){
             if(planets[i].volume>planets[j].volume){
               planets[i].absorb(planets[j]);
-              deletingPlanet.push_back(j);
             }else{
               planets[j].absorb(planets[i]);
-              deletingPlanet.push_back(i);
             }
           }
       }
     }
 
     
-
     for(int i = 0; i<planets.size(); i++){
       if(myPlanet.ifCollide(planets[i])){
          if(myPlanet.volume>planets[i].volume){
               myPlanet.absorb(planets[i]);
-              deletingPlanet.push_back(i);
             }else{
-              simulate = false;
+              //simulate = false;
             }
       }
     }
 
-    for(auto index: deletingPlanet){
-      planets.erase(planets.begin()+index);
-    }
-
-    static double t = 0;
-    static int which = 0;
-    t += dt;
-    if (t > 3) {
-      t -= 3;
-      which = rnd::uniform(particleCount);
-    }
-
-
+    checkIfExist(planets, myPlanet);
+    //update function for each planet
     for (auto& p : planets) p.update(myPlanet);
     myPlanet.update(myPlanet);
+
     //maker.set(*state);
     // for (unsigned i = 0; i < boids.size(); i++)
     //    state->position[i] = boids[i].location;
@@ -116,8 +101,9 @@ struct MyApp : App {
 
   virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m){
     Rayd r = getPickRay(w, m.x(), m.y());
-    cout<<"r: "<<r.direction()<<endl;
-    myPlanet.velocity = r.direction();
+    // cout<<"r: "<<r.direction()<<endl;
+    myPlanet.velocity += r.direction();
+    myPlanet.speed = 0.01;
   }
 
   void onDraw(Graphics& g) {
@@ -131,28 +117,30 @@ struct MyApp : App {
 
 
  void onKeyDown(const Keyboard& k){
-
-		// Use a switch to do something when a particular key is pressed
 		switch(k.key()){
       case 's':
+        cout<< "pressed s"<<endl;
         simulate = !simulate;
-		// For printable keys, we just use its character symbol:
-		// case 'i': 
-    //   myPlanet.velocity.y += 2;
-    //   break;
-    // case 'j':
-    //   //myPlanet.velocity.z += 1;
-    //   myPlanet.velocity.x += 2;
-    //   break;
-    // case 'l':
-    //   //myPlanet.velocity.z -= 1;
-    //   myPlanet.velocity.x -= 2;
-    //   break;
-    // case 'k':
-    //   myPlanet.velocity.y -= 2;
-    //   break;
+        break;
 		}
 	}
+
+  //check if any planet has volume less than 0. If yes, delete them
+  void checkIfExist(vector<Planet>& planets, Planet& myPlanet){
+    vector<int> deletingPlanet;
+    for(int i = 0; i<planets.size(); i++){
+        Planet planet = planets[i];
+        if(planet.volume < 0){
+          deletingPlanet.push_back(i);
+        }
+    }
+    for(auto index: deletingPlanet){
+      planets.erase(planets.begin()+index);
+    }
+    if (myPlanet.volume <0){
+      simulate = false;
+    }
+  }
  };
 
 int main() {   
