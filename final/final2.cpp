@@ -1,15 +1,14 @@
 #include "allocore/io/al_App.hpp"
 #include "Cuttlebone/Cuttlebone.hpp"
+#include "allocore/math/al_Ray.hpp"
 #include <cmath> 
 #include "planet.cpp"
+
 using namespace al;
 using namespace std;
+// Mesh sphere;  
 
-
-Mesh sphere;  
-
-// helper to make random
-
+//helper to find file
 string fullPathOrDie(string fileName, string whereToLook = ".") {
   SearchPaths searchPaths;
   searchPaths.addSearchPath(whereToLook);
@@ -17,7 +16,6 @@ string fullPathOrDie(string fileName, string whereToLook = ".") {
   assert(filePath != "");
   return filePath;
 }
-
 
 struct MyApp : App {
 
@@ -31,6 +29,8 @@ struct MyApp : App {
   Planet special;
   Planet myPlanet;
   bool simulate = true;
+
+  //background related
   Mesh bgMesh;
   Texture bgTexture;
 
@@ -47,9 +47,10 @@ struct MyApp : App {
 
     bgTexture.allocate(image.array());
    
+    //initial pos/light/lens
     light.pos(0, 0, 0);         
-    nav().pos(0, 0, 70);        
-    lens().far(400);             
+    nav().pos(0, 0, 100);        
+    lens().far(400);     
 
     planets.resize(particleCount);
     myPlanet.setMe();
@@ -61,14 +62,9 @@ struct MyApp : App {
 
   void onAnimate(double dt) {
 
-      if (!simulate)
-      // skip the rest of this function
+    //pressed s to pause/resume the game
+    if (!simulate)
       return;
-
-    // for (auto& b: planets) {
-    //   b.update(myPlanet);
-    // }
-    // myPlanet.update(myPlanet);
 
     vector<int> deletingPlanet;
     for(int i = 0; i<planets.size(); i++){
@@ -111,15 +107,6 @@ struct MyApp : App {
     }
 
 
-    Quatf p(planets[which].position), q(special.position);
-    p.normalize();
-    q.normalize();
-    q.slerpTo(p, 0.03);
-    special.position.x = q.x;
-    special.position.y = q.y;
-    special.position.z = q.z;
-    special.position.normalize(23);
-
     for (auto& p : planets) p.update(myPlanet);
     myPlanet.update(myPlanet);
     //maker.set(*state);
@@ -127,16 +114,19 @@ struct MyApp : App {
     //    state->position[i] = boids[i].location;
   }
 
+  virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m){
+    Rayd r = getPickRay(w, m.x(), m.y());
+    cout<<"r: "<<r.direction()<<endl;
+    myPlanet.velocity = r.direction();
+  }
+
   void onDraw(Graphics& g) {
     material();
     light();
     //bgTexture.quad(g);
-
     g.scale(scaleFactor);
-
     myPlanet.draw(g);
     for (auto& b : planets) b.draw(g);
-    
   }
 
 
@@ -144,25 +134,26 @@ struct MyApp : App {
 
 		// Use a switch to do something when a particular key is pressed
 		switch(k.key()){
-
+      case 's':
+        simulate = !simulate;
 		// For printable keys, we just use its character symbol:
-		case 'i': 
-      myPlanet.velocity.y += 2;
-      break;
-    case 'j':
-      //myPlanet.velocity.z += 1;
-      myPlanet.velocity.x += 2;
-      break;
-    case 'l':
-      //myPlanet.velocity.z -= 1;
-      myPlanet.velocity.x -= 2;
-      break;
-    case 'k':
-      myPlanet.velocity.y -= 2;
-      break;
+		// case 'i': 
+    //   myPlanet.velocity.y += 2;
+    //   break;
+    // case 'j':
+    //   //myPlanet.velocity.z += 1;
+    //   myPlanet.velocity.x += 2;
+    //   break;
+    // case 'l':
+    //   //myPlanet.velocity.z -= 1;
+    //   myPlanet.velocity.x -= 2;
+    //   break;
+    // case 'k':
+    //   myPlanet.velocity.y -= 2;
+    //   break;
 		}
 	}
-};
+ };
 
 int main() {   
   MyApp app;
