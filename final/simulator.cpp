@@ -109,6 +109,21 @@ struct MyApp : App {
   }
 
   void onDraw(Graphics& g) {
+    g.lighting(false);  // turn off lighting
+    g.depthMask(
+        false);  // disable depth buffer, so that background will be drawn over
+
+    g.pushMatrix();
+    g.translate(nav().pos());
+    g.rotate(180, 0, 0, 1);
+    bgTexture.bind();
+    g.color(1, 1, 1);
+    g.draw(bgMesh);
+    bgTexture.unbind();
+    g.popMatrix();
+
+    g.depthMask(true);  // turn depth mask back on
+
     material();
     light();
     //bgTexture.quad(g);
