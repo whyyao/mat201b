@@ -3,6 +3,7 @@
 #include "allocore/math/al_Ray.hpp"
 #include <cmath> 
 #include "planet.cpp"
+#include "common.cpp"
 
 using namespace al;
 using namespace std;
@@ -19,8 +20,8 @@ string fullPathOrDie(string fileName, string whereToLook = ".") {
 
 struct MyApp : App {
 
-  // State* state = new State;
-  //cuttlebone::Maker<State> maker;
+  cuttlebone::Taker<State> taker;
+  State* state = new State;
 
   Material material;
   Light light;
@@ -33,6 +34,7 @@ struct MyApp : App {
   //background related
   Mesh bgMesh;
   Texture bgTexture;
+
 
   MyApp(){
     addSphereWithTexcoords(bgMesh);
@@ -61,42 +63,17 @@ struct MyApp : App {
   }
 
   void onAnimate(double dt) {
-
+    simulate = state -> simulate;
     //pressed s to pause/resume the game
     if (!simulate)
       return;
 
-    for(int i = 0; i<planets.size(); i++){
-      for (int j = i + 1;j<planets.size(); j++){
-          if(planets[i].ifCollide(planets[j])){
-            if(planets[i].volume>planets[j].volume){
-              planets[i].absorb(planets[j]);
-            }else{
-              planets[j].absorb(planets[i]);
-            }
-          }
-      }
-    }
+    for (unsigned i = 0; i < planets.size(); i++)
+      planets[i].position = state->position[i];
 
-    
-    for(int i = 0; i<planets.size(); i++){
-      if(myPlanet.ifCollide(planets[i])){
-         if(myPlanet.volume>planets[i].volume){
-              myPlanet.absorb(planets[i]);
-            }else{
-              //simulate = false;
-            }
-      }
-    }
+    myPlanet.position = state->myPosition;
+    cout<<"pos: "<<myPlanet.position;
 
-    checkIfExist(planets, myPlanet);
-    //update function for each planet
-    for (auto& p : planets) p.update(myPlanet);
-    myPlanet.update(myPlanet);
-
-    //maker.set(*state);
-    // for (unsigned i = 0; i < boids.size(); i++)
-    //    state->position[i] = boids[i].location;
   }
 
   virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m){
@@ -145,5 +122,5 @@ struct MyApp : App {
 
 int main() {   
   MyApp app;
-  //app.maker.start();
+  app.taker.start();
   app.start(); }

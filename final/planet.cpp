@@ -121,18 +121,19 @@ struct Planet{
     return false;
   }
 
+//absorb with animate according with speed
   void absorb(Planet& otherPlanet){
     float absorbtionSpeed = speed+otherPlanet.speed;
-    //cout<<"speed"<<absorbtionSpeed<<endl;
     float deltaVolume = absorbtionSpeed * 50000;
-    cout<<"devolume"<<deltaVolume<<endl;
-    cout<<"volume"<<volume<<endl;
+    // cout<<"devolume"<<deltaVolume<<endl;
+    // cout<<"volume"<<volume<<endl;
     volume += deltaVolume;
     otherPlanet.volume -= deltaVolume;
     updateVolume();
     otherPlanet.updateVolume();
   }
 
+//update rad with new volume
   void updateVolume(){
     rad = pow((volume *3 /4 /3.14),1.0/3);
     mesh.reset();
