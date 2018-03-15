@@ -50,7 +50,7 @@ struct MyApp : App {
    
     //initial pos/light/lens
     light.pos(0, 0, 0);         
-    nav().pos(0, 0, 100);        
+    nav().pos(0, 0, 0);        
     lens().far(400);     
 
     planets.resize(particleCount);
@@ -74,7 +74,7 @@ struct MyApp : App {
     }
     myPlanet.position = state->myPosition;
     myPlanet.rad = state->myRad;
-   // nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
+    nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
 
     
     for(auto& p: planets){
