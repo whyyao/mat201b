@@ -12,7 +12,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   Material material;
   Light light;
-
   vector<Planet> planets;
   Planet special;
   Planet myPlanet;
@@ -38,9 +37,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
     // initial pos/light/lens
     light.pos(0, 0, 0);
-    nav().pos(0, 0, 100);
+    nav().pos(0, 0, 0); 
     lens().near(0.1);
-    lens().far(5000);
+    lens().far(5000);            
+    lens().far(400);     
 
     planets.resize(particleCount);
     myPlanet.setMe();
@@ -59,6 +59,14 @@ struct MyApp : OmniStereoGraphicsRenderer {
     }
     myPlanet.position = state->myPosition;
     myPlanet.rad = state->myRad;
+
+    nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
+
+    
+    for(auto& p: planets){
+      p.updateVolume();
+      p.updateColor(myPlanet);
+    }
   }
 
   void onDraw(Graphics& g) {

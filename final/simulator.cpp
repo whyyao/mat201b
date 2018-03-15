@@ -119,7 +119,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     if (t > 0.f) {
     }
     // r(t)
-    cout << "r: " << r(placeholderSize) << endl;
+
     Vec3f newVelocity =
         cross(Vec3f(r(placeholderSize)), myPlanet.position).normalize();
     myPlanet.velocity = newVelocity;
