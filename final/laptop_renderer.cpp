@@ -1,12 +1,10 @@
 #include "common.h"
 
-#include "alloutil/al_OmniStereoGraphicsRenderer.hpp"
-
 using namespace al;
 using namespace std;
 // Mesh sphere;
 
-struct MyApp : OmniStereoGraphicsRenderer {
+struct MyApp : App {
   cuttlebone::Taker<State> taker;
   State* state = new State;
 
@@ -39,15 +37,18 @@ struct MyApp : OmniStereoGraphicsRenderer {
     // initial pos/light/lens
     light.pos(0, 0, 0);
     nav().pos(0, 0, 100);
-    lens().far(1000);
+    lens().far(400);
 
     planets.resize(particleCount);
     myPlanet.setMe();
+
+    background(Color(0.07));
+    initWindow();
+    initAudio();
   }
 
   void onAnimate(double dt) {
     taker.get(*state);
-    pose = state->pose;
     simulate = state->simulate;
     // pressed s to pause/resume the game
     if (!simulate) return;
@@ -60,24 +61,17 @@ struct MyApp : OmniStereoGraphicsRenderer {
     myPlanet.rad = state->myRad;
   }
 
+  virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m) {
+    // Rayd r = getPickRay(w, m.x(), m.y());
+    // // cout<<"r: "<<r.direction()<<endl;
+    // myPlanet.velocity += r.direction();
+    // myPlanet.speed = 0.01;
+  }
+
   void onDraw(Graphics& g) {
-    shader().uniform("texture", 0.0);
-    shader().uniform("lighting", 1.0);
-
-    // material();
-    light();
-
-    // bgTexture.quad(g);
-    g.scale(scaleFactor);
-    myPlanet.draw(g);
-    for (auto& b : planets) b.draw(g);
-
-    shader().uniform("texture", 1.0);
-    shader().uniform("lighting", 0.0);
-
     g.lighting(false);  // turn off lighting
-    //// disable depth buffer, so that background will be drawn over
-    g.depthMask(false);
+    g.depthMask(
+        false);  // disable depth buffer, so that background will be drawn over
 
     g.pushMatrix();
     g.translate(nav().pos());
@@ -89,7 +83,22 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.popMatrix();
 
     g.depthMask(true);  // turn depth mask back on
-    g.lighting(true);
+
+    material();
+    light();
+    // bgTexture.quad(g);
+    g.scale(scaleFactor);
+    myPlanet.draw(g);
+    for (auto& b : planets) b.draw(g);
+  }
+
+  void onKeyDown(const Keyboard& k) {
+    switch (k.key()) {
+      case 's':
+        cout << "pressed s" << endl;
+        simulate = !simulate;
+        break;
+    }
   }
 
   // check if any planet has volume less than 0. If yes, delete them
