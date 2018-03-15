@@ -39,7 +39,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
     // initial pos/light/lens
     light.pos(0, 0, 0);
     nav().pos(0, 0, 100);
-    lens().far(1000);
+    lens().near(0.1);
+    lens().far(5000);
 
     planets.resize(particleCount);
     myPlanet.setMe();
@@ -61,19 +62,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
   }
 
   void onDraw(Graphics& g) {
-    shader().uniform("texture", 0.0);
-    shader().uniform("lighting", 1.0);
-
-    // material();
-    light();
-
-    // bgTexture.quad(g);
-    g.scale(scaleFactor);
-    myPlanet.draw(g);
-    for (auto& b : planets) b.draw(g);
-
-    shader().uniform("texture", 1.0);
     shader().uniform("lighting", 0.0);
+    shader().uniform("texture", 1.0);
 
     g.lighting(false);  // turn off lighting
     //// disable depth buffer, so that background will be drawn over
@@ -89,7 +79,18 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.popMatrix();
 
     g.depthMask(true);  // turn depth mask back on
-    g.lighting(true);
+    // g.lighting(true);
+
+    // material();
+    light();
+    shader().uniform("lighting", 1.0);
+    shader().uniform("texture", 0.0);
+
+    // bgTexture.quad(g);
+    g.color(1, 1, 1);
+    g.scale(scaleFactor);
+    myPlanet.draw(g);
+    for (auto& b : planets) b.draw(g);
   }
 
   // check if any planet has volume less than 0. If yes, delete them
