@@ -10,6 +10,7 @@ struct State {
   Vec3f position[50];
   float rad[50];
   Vec3f myPosition;
+  float myRad;
   bool simulate;
 };
 

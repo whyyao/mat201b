@@ -107,6 +107,7 @@ struct MyApp : App {
        state->rad[i] = planets[i].rad;
     }
     state-> myPosition = myPlanet.position;
+    state-> myRad = myPlanet.rad;
     maker.set(*state);
   }
 

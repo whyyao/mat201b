@@ -71,10 +71,10 @@ struct MyApp : App {
 
     for (unsigned i = 0; i < planets.size(); i++){
       planets[i].position = state->position[i];
-      cout<<"pos: "<<state->position[i]<<endl;
       planets[i].rad = state->rad[i];
     }
     myPlanet.position = state->myPosition;
+    myPlanet.rad = state->myRad;
 
   }
 
