@@ -118,7 +118,7 @@ struct MyApp : App {
     if(t > 0.f){
     }
     // r(t)
-    cout<<"r: "<<r(placeholderSize)<<endl;
+    //cout<<"r: "<<r(placeholderSize)<<endl;
     Vec3f newVelocity = cross(Vec3f(r(placeholderSize)),myPlanet.position).normalize();
     myPlanet.velocity = newVelocity;
     myPlanet.speed = 0.015;

@@ -25,7 +25,6 @@ struct MyApp : App {
 
   Material material;
   Light light;
-
   vector<Planet> planets;
   Planet special;
   Planet myPlanet;
@@ -75,14 +74,15 @@ struct MyApp : App {
     }
     myPlanet.position = state->myPosition;
     myPlanet.rad = state->myRad;
+   // nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
 
-  }
+    
+    for(auto& p: planets){
+      p.updateVolume();
+      p.updateColor(myPlanet);
+    }
 
-  virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m){
-    // Rayd r = getPickRay(w, m.x(), m.y());
-    // // cout<<"r: "<<r.direction()<<endl;
-    // myPlanet.velocity += r.direction();
-    // myPlanet.speed = 0.01;
+    
   }
 
   void onDraw(Graphics& g) {

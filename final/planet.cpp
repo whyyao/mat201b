@@ -62,23 +62,19 @@ struct Planet{
     //used to rotate and updated the position on the surface
 
     velocity += acceleration;
-
+    updateVolume();
 
     //cout<<velocity<<endl;
 
     if(myself == false){
-
+      
       Quatf q;
       q.fromAxisAngle(speed, velocity);
       q.normalize();
       position = q.rotate(position);
       // if planet volume is greater, change color to red
       // if not, change color to green
-      if(my.volume > volume){
-        c = HSV(120/360.0f, 1, 1);
-      }else{
-        c =  HSV(0, 0.7, 1);
-      }
+      updateColor(my);
     }else{
       Quatf q;
       q.fromAxisAngle(speed, velocity);
@@ -89,6 +85,15 @@ struct Planet{
     }
   }
 
+  void updateColor(Planet my){
+    if(myself == false){
+    if(my.volume > volume){
+            c = HSV(120/360.0f, 1, 1);
+    }else{
+            c =  HSV(0, 0.7, 1);
+    }
+  }
+  }
   void draw(Graphics& g) {
     g.pushMatrix();
     g.translate(position);
@@ -113,8 +118,6 @@ struct Planet{
     // cout<<"volume"<<volume<<endl;
     volume += deltaVolume;
     otherPlanet.volume -= deltaVolume;
-    updateVolume();
-    otherPlanet.updateVolume();
   }
 
 //update rad with new volume
