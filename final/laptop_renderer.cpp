@@ -1,17 +1,16 @@
 #include "common.h"
 
-#include "alloutil/al_OmniStereoGraphicsRenderer.hpp"
-
 using namespace al;
 using namespace std;
 // Mesh sphere;
 
-struct MyApp : OmniStereoGraphicsRenderer {
+struct MyApp : App {
   cuttlebone::Taker<State> taker;
   State* state = new State;
 
   Material material;
   Light light;
+
   vector<Planet> planets;
   Planet special;
   Planet myPlanet;
@@ -37,18 +36,19 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
     // initial pos/light/lens
     light.pos(0, 0, 0);
-    nav().pos(0, 0, 0); 
-    lens().near(0.1);
-    lens().far(5000);            
-    lens().far(400);     
+    nav().pos(0, 0, 100);
+    lens().far(400);
 
     planets.resize(particleCount);
     myPlanet.setMe();
+
+    background(Color(0.07));
+    initWindow();
+    initAudio();
   }
 
   void onAnimate(double dt) {
     taker.get(*state);
-    pose = state->pose;
     simulate = state->simulate;
     // pressed s to pause/resume the game
     if (!simulate) return;
@@ -59,23 +59,19 @@ struct MyApp : OmniStereoGraphicsRenderer {
     }
     myPlanet.position = state->myPosition;
     myPlanet.rad = state->myRad;
+  }
 
-    nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
-
-    
-    for(auto& p: planets){
-      p.updateVolume();
-      p.updateColor(myPlanet);
-    }
+  virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m) {
+    // Rayd r = getPickRay(w, m.x(), m.y());
+    // // cout<<"r: "<<r.direction()<<endl;
+    // myPlanet.velocity += r.direction();
+    // myPlanet.speed = 0.01;
   }
 
   void onDraw(Graphics& g) {
-    shader().uniform("lighting", 0.0);
-    shader().uniform("texture", 1.0);
-
     g.lighting(false);  // turn off lighting
-    //// disable depth buffer, so that background will be drawn over
-    g.depthMask(false);
+    g.depthMask(
+        false);  // disable depth buffer, so that background will be drawn over
 
     g.pushMatrix();
     g.translate(nav().pos());
@@ -87,18 +83,22 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.popMatrix();
 
     g.depthMask(true);  // turn depth mask back on
-    // g.lighting(true);
 
-    // material();
+    material();
     light();
-    shader().uniform("lighting", 1.0);
-    shader().uniform("texture", 0.0);
-
     // bgTexture.quad(g);
-    g.color(1, 1, 1);
     g.scale(scaleFactor);
     myPlanet.draw(g);
     for (auto& b : planets) b.draw(g);
+  }
+
+  void onKeyDown(const Keyboard& k) {
+    switch (k.key()) {
+      case 's':
+        cout << "pressed s" << endl;
+        simulate = !simulate;
+        break;
+    }
   }
 
   // check if any planet has volume less than 0. If yes, delete them
