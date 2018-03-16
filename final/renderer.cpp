@@ -22,6 +22,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Texture bgTexture;
 
   MyApp() {
+    memset(state, 0, sizeof(State));
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
@@ -47,7 +48,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
   }
 
   void onAnimate(double dt) {
-    if (taker.get(*state) > 1) pose = state->pose;
+    if (taker.get(*state) > 0) pose = state->pose;
     simulate = state->simulate;
     // pressed s to pause/resume the game
     if (!simulate) return;
@@ -65,6 +66,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
       p.updateVolume();
       p.updateColor(myPlanet);
     }
+    myPlanet.updateVolume();
   }
 
   void onDraw(Graphics& g) {
@@ -96,12 +98,11 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.color(1, 1, 1);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets){
-      if(b.rad > 0){
+    for (auto& b : planets) {
+      if (b.rad > 0) {
         b.draw(g);
       }
     }
-
   }
 
   // check if any planet has volume less than 0. If yes, delete them

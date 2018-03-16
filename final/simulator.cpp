@@ -30,6 +30,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
         InterfaceServerClient(Simulator::defaultInterfaceServerIP()) {
+    memset(state, 0, sizeof(State));
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
@@ -97,7 +98,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     myPlanet.update(myPlanet);
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
-    
+
     // cuttlebone settings
 
     for (unsigned i = 0; i < planets.size(); i++) {
@@ -148,8 +149,8 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     // bgTexture.quad(g);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets){
-      if(b.rad > 0){
+    for (auto& b : planets) {
+      if (b.rad > 0) {
         b.draw(g);
       }
     }
