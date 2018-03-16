@@ -26,7 +26,6 @@ struct State {
   float volume[particleCount];
   Vec3f myPosition;
   float myVol;
-  bool simulate;
   Pose pose;
 };
 

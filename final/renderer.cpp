@@ -15,7 +15,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
   vector<Planet> planets;
   Planet special;
   Planet myPlanet;
-  bool simulate = true;
 
   // background related
   Mesh bgMesh;
@@ -49,9 +48,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   void onAnimate(double dt) {
     if (taker.get(*state) > 0) pose = state->pose;
-    simulate = state->simulate;
-    // pressed s to pause/resume the game
-    if (!simulate) return;
 
     for (unsigned i = 0; i < planets.size(); i++) {
       planets[i].position = state->position[i];
@@ -102,23 +98,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
       if (b.rad > 0) {
         b.draw(g);
       }
-    }
-  }
-
-  // check if any planet has volume less than 0. If yes, delete them
-  void checkIfExist(vector<Planet>& planets, Planet& myPlanet) {
-    vector<int> deletingPlanet;
-    for (int i = 0; i < planets.size(); i++) {
-      Planet planet = planets[i];
-      if (planet.volume < 0) {
-        deletingPlanet.push_back(i);
-      }
-    }
-    for (auto index : deletingPlanet) {
-      planets.erase(planets.begin() + index);
-    }
-    if (myPlanet.volume < 0) {
-      simulate = false;
     }
   }
 };
