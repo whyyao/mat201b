@@ -99,7 +99,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     myPlanet.update(myPlanet);
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
-
+    
     // cuttlebone settings
 
     for (unsigned i = 0; i < planets.size(); i++) {
