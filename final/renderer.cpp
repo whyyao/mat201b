@@ -37,18 +37,17 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
     // initial pos/light/lens
     light.pos(0, 0, 0);
-    nav().pos(0, 0, 0); 
+    nav().pos(0, 0, 0);
     lens().near(0.1);
-    lens().far(5000);            
-    lens().far(400);     
+    lens().far(5000);
+    lens().far(400);
 
     planets.resize(particleCount);
     myPlanet.setMe();
   }
 
   void onAnimate(double dt) {
-    taker.get(*state);
-    pose = state->pose;
+    if (taker.get(*state) > 1) pose = state->pose;
     simulate = state->simulate;
     // pressed s to pause/resume the game
     if (!simulate) return;
@@ -60,10 +59,9 @@ struct MyApp : OmniStereoGraphicsRenderer {
     myPlanet.position = state->myPosition;
     myPlanet.rad = state->myRad;
 
-    nav().faceToward(myPlanet.position, Vec3d(0,1,0), 0.05);
+    nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
-    
-    for(auto& p: planets){
+    for (auto& p : planets) {
       p.updateVolume();
       p.updateColor(myPlanet);
     }
@@ -91,7 +89,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
     // material();
     light();
-    shader().uniform("lighting", 1.0);
+    shader().uniform("lighting", 0.5);
     shader().uniform("texture", 0.0);
 
     // bgTexture.quad(g);
