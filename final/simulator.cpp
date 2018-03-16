@@ -92,8 +92,6 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         }
       }
     }
-
-    checkIfExist(planets, myPlanet);
     // update function for each planet
     for (auto& p : planets) p.update(myPlanet);
     myPlanet.update(myPlanet);
@@ -104,10 +102,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
     for (unsigned i = 0; i < planets.size(); i++) {
       state->position[i] = planets[i].position;
-      state->rad[i] = planets[i].rad;
+      state->volume[i] = planets[i].volume;
     }
     state->myPosition = myPlanet.position;
-    state->myRad = myPlanet.rad;
+    state->myVol = myPlanet.volume;
     state->pose = nav();
     maker.set(*state);
   }
@@ -150,7 +148,11 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     // bgTexture.quad(g);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets) b.draw(g);
+    for (auto& b : planets){
+      if(b.rad > 0){
+        b.draw(g);
+      }
+    }
     Mesh& m = g.mesh();
     addCone(m);
     g.translate(savePos);

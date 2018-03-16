@@ -54,10 +54,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
     for (unsigned i = 0; i < planets.size(); i++) {
       planets[i].position = state->position[i];
-      planets[i].rad = state->rad[i];
+      planets[i].volume = state->volume[i];
     }
     myPlanet.position = state->myPosition;
-    myPlanet.rad = state->myRad;
+    myPlanet.volume = state->myVol;
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
@@ -96,7 +96,12 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.color(1, 1, 1);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets) b.draw(g);
+    for (auto& b : planets){
+      if(b.rad > 0){
+        b.draw(g);
+      }
+    }
+
   }
 
   // check if any planet has volume less than 0. If yes, delete them

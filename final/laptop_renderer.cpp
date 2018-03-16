@@ -69,13 +69,6 @@ struct MyApp : App {
     }
   }
 
-  virtual void onMouseDown(const ViewpointWindow& w, const Mouse& m) {
-    // Rayd r = getPickRay(w, m.x(), m.y());
-    // // cout<<"r: "<<r.direction()<<endl;
-    // myPlanet.velocity += r.direction();
-    // myPlanet.speed = 0.01;
-  }
-
   void onDraw(Graphics& g) {
     g.lighting(false);  // turn off lighting
     g.depthMask(

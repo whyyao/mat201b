@@ -123,8 +123,10 @@ struct Planet{
 //update rad with new volume
   void updateVolume(){
     rad = pow((volume *3 /4 /3.14),1.0/3);
-    mesh.reset();
-    addSphere(mesh,rad);
-    mesh.generateNormals();
+    if(rad>0){
+      mesh.reset();
+      addSphere(mesh,rad);
+      mesh.generateNormals();
+    }
   }
 };
