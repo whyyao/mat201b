@@ -5,7 +5,7 @@
 using namespace al;
 using namespace std;
 
-unsigned particleCount = 50;   
+const unsigned particleCount = 100;   
 double maximumAcceleration = 10;  
 double sphereRadius = 10;  
 double placeholderSize = 300;
@@ -31,7 +31,7 @@ struct Planet{
     velocity = r();
     position = (r()*placeholderSize).normalize(placeholderSize);
     speed = rnd::uniform(0.005);
-    rad = (rnd::uniformS()*4)+sphereRadius;
+    rad = (rnd::uniformS()*5)+sphereRadius;
     volume = 3.14* 4/3 *(rad) *(rad) *(rad);
 
     //adding mesh

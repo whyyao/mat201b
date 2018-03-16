@@ -22,8 +22,8 @@ string fullPathOrDie(string fileName, string whereToLook = ".") {
 }
 
 struct State {
-  Vec3f position[50];
-  float volume[50];
+  Vec3f position[particleCount];
+  float volume[particleCount];
   Vec3f myPosition;
   float myVol;
   bool simulate;
