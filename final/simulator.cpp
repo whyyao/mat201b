@@ -3,6 +3,7 @@
 #include "alloutil/al_AlloSphereAudioSpatializer.hpp"
 #include "alloutil/al_Simulator.hpp"
 #include "Gamma/SamplePlayer.h"
+#include <unistd.h>
 
 using namespace al;
 using namespace std;
@@ -102,7 +103,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
           absorbPlayer.reset();
           myPlanet.absorb(planets[i]);
         } else {
-          simulate = false;
+          planets[i].absorb(myPlanet);
         }
       }
     }
@@ -111,6 +112,13 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     myPlanet.update(myPlanet);
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
+
+
+    if(myPlanet.volume<0){
+      usleep(1000);
+      simulate = false;
+      state->simulate = simulate;
+    }
     
     // cuttlebone settings
 

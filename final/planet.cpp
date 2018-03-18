@@ -30,6 +30,7 @@ struct Planet{
     position = (r()*placeholderSize).normalize(placeholderSize);
     speed = rnd::uniform(0.005);
     rad = (rnd::uniformS()*5)+sphereRadius;
+    rad += 2;
     volume = 3.14* 4/3 *(rad) *(rad) *(rad);
 
     //adding mesh
