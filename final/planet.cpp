@@ -132,4 +132,6 @@ struct enPlanet : Planet {
     // if not, change color to green
     updateColor(my);
   }
+
 };
+
