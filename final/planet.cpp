@@ -60,8 +60,6 @@ struct Planet{
 
   void update(Planet my){
     //used to rotate and updated the position on the surface
-
-    velocity += acceleration;
     updateVolume();
 
     //cout<<velocity<<endl;
