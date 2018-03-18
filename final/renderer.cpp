@@ -14,7 +14,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Light light;
   vector<enPlanet> planets;
 
-  myPlanet myPlanet;
+  mePlanet myPlanet;
   bool simulate = true;
 
   // background related

@@ -21,7 +21,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
   vector<enPlanet> planets;
 
-  myPlanet myPlanet;
+  mePlanet myPlanet;
   bool simulate = true;
 
   Vec3f savePos;
