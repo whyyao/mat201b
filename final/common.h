@@ -11,7 +11,13 @@
 
 using namespace al;
 
+
 // Common definition of application state
+
+  const unsigned particleCount = 100;     
+  double sphereRadius = 10;  
+  double placeholderSize = 300;
+  double scaleFactor = 0.1;
 
 string fullPathOrDie(string fileName, string whereToLook = ".") {
   SearchPaths searchPaths;

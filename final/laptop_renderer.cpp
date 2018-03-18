@@ -11,9 +11,8 @@ struct MyApp : App {
   Material material;
   Light light;
 
-  vector<Planet> planets;
-  Planet special;
-  Planet myPlanet;
+  vector<enPlanet> planets;
+  myPlanet myPlanet;
   bool simulate = true;
 
   // background related
@@ -40,7 +39,6 @@ struct MyApp : App {
     lens().far(400);
 
     planets.resize(particleCount);
-    myPlanet.setMe();
 
     background(Color(0.07));
     initWindow();

@@ -12,9 +12,9 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   Material material;
   Light light;
-  vector<Planet> planets;
-  Planet special;
-  Planet myPlanet;
+  vector<enPlanet> planets;
+  
+  myPlanet myPlanet;
   bool simulate = true;
 
   // background related
@@ -43,7 +43,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
     lens().far(400);
 
     planets.resize(particleCount);
-    myPlanet.setMe();
+  
   }
 
   void onAnimate(double dt) {
@@ -104,22 +104,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   }
 
-  // check if any planet has volume less than 0. If yes, delete them
-  void checkIfExist(vector<Planet>& planets, Planet& myPlanet) {
-    vector<int> deletingPlanet;
-    for (int i = 0; i < planets.size(); i++) {
-      Planet planet = planets[i];
-      if (planet.volume < 0) {
-        deletingPlanet.push_back(i);
-      }
-    }
-    for (auto index : deletingPlanet) {
-      planets.erase(planets.begin() + index);
-    }
-    if (myPlanet.volume < 0) {
-      simulate = false;
-    }
-  }
+
 };
 
 int main() {

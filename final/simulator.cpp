@@ -9,6 +9,7 @@ using namespace std;
 using namespace gam;
 // Mesh sphere;
 
+
 struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   State* state = new State;
   cuttlebone::Maker<State> maker;
@@ -18,9 +19,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   Material material;
   Light light;
 
-  vector<Planet> planets;
-  Planet special;
-  Planet myPlanet;
+  vector<enPlanet> planets;
+
+  myPlanet myPlanet;
   bool simulate = true;
 
   Vec3f savePos;
@@ -54,7 +55,6 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     lens().far(400);
 
     planets.resize(particleCount);
-    myPlanet.setMe();
 
     background(Color(0.07));
     initWindow();
@@ -99,10 +99,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     for (int i = 0; i < planets.size(); i++) {
       if (myPlanet.ifCollide(planets[i])) {
         if (myPlanet.volume > planets[i].volume) {
-          myPlanet.absorb(planets[i]);
           absorbPlayer.reset();
+          myPlanet.absorb(planets[i]);
         } else {
-          // simulate = false;
+          simulate = false;
         }
       }
     }
@@ -182,22 +182,6 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
   }
 
-  // check if any planet has volume less than 0. If yes, delete them
-  void checkIfExist(vector<Planet>& planets, Planet& myPlanet) {
-    vector<int> deletingPlanet;
-    for (int i = 0; i < planets.size(); i++) {
-      Planet planet = planets[i];
-      if (planet.volume < 0) {
-        deletingPlanet.push_back(i);
-      }
-    }
-    for (auto index : deletingPlanet) {
-      planets.erase(planets.begin() + index);
-    }
-    if (myPlanet.volume < 0) {
-      simulate = false;
-    }
-  }
 
   virtual void onSound(AudioIOData& io) {
     aSoundSource.pose(nav());
