@@ -139,4 +139,5 @@ struct enPlanet: Planet{
       updateColor(my);
     
   }
+
 };

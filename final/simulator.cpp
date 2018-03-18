@@ -113,11 +113,18 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
-
+    //check if lose
     if(myPlanet.volume<0){
       usleep(1000);
       simulate = false;
       state->simulate = simulate;
+
+      //restart();
+    }
+
+    //check if win
+    for(auto& planet:planets){
+
     }
     
     // cuttlebone settings
@@ -181,15 +188,15 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     g.draw(m);
   }
 
-  void onKeyDown(const Keyboard& k) {
+  void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
     switch (k.key()) {
+      default:
+        break;
       case 's':
-        cout << "pressed s" << endl;
         simulate = !simulate;
         break;
     }
   }
-
 
   virtual void onSound(AudioIOData& io) {
     aSoundSource.pose(nav());
@@ -201,7 +208,14 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     listener()->pose(nav());
     scene()->render(io);
   }
+
+  // void restart(){ 
+  // myPlanet = mePlanet();
+  // planets.resize();
+//}
+
 };
+
 
 int main() {
   MyApp app;
