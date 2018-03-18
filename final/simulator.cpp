@@ -2,9 +2,11 @@
 
 #include "alloutil/al_AlloSphereAudioSpatializer.hpp"
 #include "alloutil/al_Simulator.hpp"
+#include "Gamma/SamplePlayer.h"
 
 using namespace al;
 using namespace std;
+using namespace gam;
 // Mesh sphere;
 
 struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
@@ -26,6 +28,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   // background related
   Mesh bgMesh;
   Texture bgTexture;
+
+  SamplePlayer<> bgPlayer;
+  SamplePlayer<> absorbPlayer;
 
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
@@ -55,11 +60,17 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     initWindow();
 
     // audio
+    bgPlayer.load(fullPathOrDie("bg.wav").c_str());
+    absorbPlayer.load(fullPathOrDie("absorb.wav").c_str());
+    bgPlayer.reset();
+    absorbPlayer.finish();
+
     AlloSphereAudioSpatializer::initAudio();
     AlloSphereAudioSpatializer::initSpatialization();
     // if gamma
-    // gam::Sync::master().spu(AlloSphereAudioSpatializer::audioIO().fps());
+    gam::Sync::master().spu(AlloSphereAudioSpatializer::audioIO().fps());
     scene()->addSource(aSoundSource);
+    aSoundSource.dopplerType(DOPPLER_NONE);
     scene()->usePerSampleProcessing(false);
   }
 
@@ -76,8 +87,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         if (planets[i].ifCollide(planets[j])) {
           if (planets[i].volume > planets[j].volume) {
             planets[i].absorb(planets[j]);
+           
           } else {
             planets[j].absorb(planets[i]);
+           
           }
         }
       }
@@ -87,6 +100,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
       if (myPlanet.ifCollide(planets[i])) {
         if (myPlanet.volume > planets[i].volume) {
           myPlanet.absorb(planets[i]);
+          absorbPlayer.reset();
         } else {
           // simulate = false;
         }
@@ -188,7 +202,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   virtual void onSound(AudioIOData& io) {
     aSoundSource.pose(nav());
     while (io()) {
-      aSoundSource.writeSample(0);
+      //aSoundSource.writeSample(bgPlayer());
+      aSoundSource.writeSample(absorbPlayer());
+      //io.out(0) = io.out(1) = bgPlayer();
     }
     listener()->pose(nav());
     scene()->render(io);
