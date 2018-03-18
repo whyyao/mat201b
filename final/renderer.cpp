@@ -12,9 +12,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   Material material;
   Light light;
-  vector<Planet> planets;
-  Planet special;
-  Planet myPlanet;
+  vector<enPlanet> planets;
+
+  myPlanet myPlanet;
+  bool simulate = true;
 
   // background related
   Mesh bgMesh;
@@ -43,7 +44,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
     lens().far(400);
 
     planets.resize(particleCount);
-    myPlanet.setMe();
   }
 
   void onAnimate(double dt) {

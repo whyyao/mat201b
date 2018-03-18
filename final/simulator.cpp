@@ -1,10 +1,13 @@
 #include "common.h"
 
+#include <unistd.h>
+#include "Gamma/SamplePlayer.h"
 #include "alloutil/al_AlloSphereAudioSpatializer.hpp"
 #include "alloutil/al_Simulator.hpp"
 
 using namespace al;
 using namespace std;
+using namespace gam;
 // Mesh sphere;
 
 struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
@@ -16,9 +19,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   Material material;
   Light light;
 
-  vector<Planet> planets;
-  Planet special;
-  Planet myPlanet;
+  vector<enPlanet> planets;
+
+  myPlanet myPlanet;
   bool simulate = true;
 
   Vec3f savePos;
@@ -26,6 +29,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   // background related
   Mesh bgMesh;
   Texture bgTexture;
+
+  SamplePlayer<> bgPlayer;
+  SamplePlayer<> absorbPlayer;
 
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
@@ -50,17 +56,22 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     lens().far(400);
 
     planets.resize(particleCount);
-    myPlanet.setMe();
 
     background(Color(0.07));
     initWindow();
 
     // audio
+    bgPlayer.load(fullPathOrDie("bg.wav").c_str());
+    absorbPlayer.load(fullPathOrDie("absorb.wav").c_str());
+    bgPlayer.reset();
+    absorbPlayer.finish();
+
     AlloSphereAudioSpatializer::initAudio();
     AlloSphereAudioSpatializer::initSpatialization();
     // if gamma
-    // gam::Sync::master().spu(AlloSphereAudioSpatializer::audioIO().fps());
+    gam::Sync::master().spu(AlloSphereAudioSpatializer::audioIO().fps());
     scene()->addSource(aSoundSource);
+    aSoundSource.dopplerType(DOPPLER_NONE);
     scene()->usePerSampleProcessing(false);
   }
 
@@ -77,6 +88,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         if (planets[i].ifCollide(planets[j])) {
           if (planets[i].volume > planets[j].volume) {
             planets[i].absorb(planets[j]);
+
           } else {
             planets[j].absorb(planets[i]);
           }
@@ -87,9 +99,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     for (int i = 0; i < planets.size(); i++) {
       if (myPlanet.ifCollide(planets[i])) {
         if (myPlanet.volume > planets[i].volume) {
+          absorbPlayer.reset();
           myPlanet.absorb(planets[i]);
         } else {
-          // simulate = false;
+          planets[i].absorb(myPlanet);
         }
       }
     }
@@ -98,6 +111,11 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     myPlanet.update(myPlanet);
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
+
+    if (myPlanet.volume < 0) {
+      usleep(1000);
+      simulate = false;
+    }
 
     // cuttlebone settings
 
@@ -169,30 +187,15 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
   }
 
-  // check if any planet has volume less than 0. If yes, delete them
-  void checkIfExist(vector<Planet>& planets, Planet& myPlanet) {
-    vector<int> deletingPlanet;
-    for (int i = 0; i < planets.size(); i++) {
-      Planet planet = planets[i];
-      if (planet.volume < 0) {
-        deletingPlanet.push_back(i);
-      }
-    }
-    for (auto index : deletingPlanet) {
-      planets.erase(planets.begin() + index);
-    }
-    if (myPlanet.volume < 0) {
-      simulate = false;
-    }
-  }
-
   virtual void onSound(AudioIOData& io) {
-    aSoundSource.pose(nav());
+    // aSoundSource.pose(nav());
     while (io()) {
-      aSoundSource.writeSample(0);
+      // aSoundSource.writeSample(bgPlayer());
+      // aSoundSource.writeSample(absorbPlayer());
+      io.out(0) = io.out(1) = bgPlayer() + absorbPlayer();
     }
-    listener()->pose(nav());
-    scene()->render(io);
+    // listener()->pose(nav());
+    // scene()->render(io);
   }
 };
 
