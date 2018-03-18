@@ -1,15 +1,14 @@
 #include "common.h"
 
+#include <unistd.h>
+#include "Gamma/SamplePlayer.h"
 #include "alloutil/al_AlloSphereAudioSpatializer.hpp"
 #include "alloutil/al_Simulator.hpp"
-#include "Gamma/SamplePlayer.h"
-#include <unistd.h>
 
 using namespace al;
 using namespace std;
 using namespace gam;
 // Mesh sphere;
-
 
 struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   State* state = new State;
@@ -22,7 +21,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
   vector<enPlanet> planets;
 
-  myPlanet myPlanet;
+  mePlanet myPlanet;
   bool simulate = true;
 
   Vec3f savePos;
@@ -37,6 +36,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
         InterfaceServerClient(Simulator::defaultInterfaceServerIP()) {
+    memset(state, 0, sizeof(State));
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
@@ -88,10 +88,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         if (planets[i].ifCollide(planets[j])) {
           if (planets[i].volume > planets[j].volume) {
             planets[i].absorb(planets[j]);
-           
+
           } else {
             planets[j].absorb(planets[i]);
-           
           }
         }
       }
@@ -113,6 +112,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
     nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
+
     //check if lose
     if(myPlanet.volume<0){
       usleep(1000);
@@ -126,7 +126,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     for(auto& planet:planets){
 
     }
-    
+
     // cuttlebone settings
 
     for (unsigned i = 0; i < planets.size(); i++) {
@@ -177,8 +177,8 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     // bgTexture.quad(g);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets){
-      if(b.rad > 0){
+    for (auto& b : planets) {
+      if (b.rad > 0) {
         b.draw(g);
       }
     }
@@ -199,14 +199,14 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   }
 
   virtual void onSound(AudioIOData& io) {
-    aSoundSource.pose(nav());
+    // aSoundSource.pose(nav());
     while (io()) {
-      aSoundSource.writeSample(bgPlayer());
-      aSoundSource.writeSample(absorbPlayer());
-      //io.out(0) = io.out(1) = bgPlayer();
+      // aSoundSource.writeSample(bgPlayer());
+      // aSoundSource.writeSample(absorbPlayer());
+      io.out(0) = io.out(1) = bgPlayer() + absorbPlayer();
     }
-    listener()->pose(nav());
-    scene()->render(io);
+    // listener()->pose(nav());
+    // scene()->render(io);
   }
 
   // void restart(){ 

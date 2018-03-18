@@ -13,8 +13,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Material material;
   Light light;
   vector<enPlanet> planets;
-  
-  myPlanet myPlanet;
+
+  mePlanet myPlanet;
   bool simulate = true;
 
   // background related
@@ -22,6 +22,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Texture bgTexture;
 
   MyApp() {
+    memset(state, 0, sizeof(State));
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
@@ -43,14 +44,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
     lens().far(400);
 
     planets.resize(particleCount);
-  
   }
 
   void onAnimate(double dt) {
-    if (taker.get(*state) > 1) pose = state->pose;
-    simulate = state->simulate;
-    // pressed s to pause/resume the game
-    if (!simulate) return;
+    if (taker.get(*state) > 0) pose = state->pose;
 
     for (unsigned i = 0; i < planets.size(); i++) {
       planets[i].position = state->position[i];
@@ -65,6 +62,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
       p.updateVolume();
       p.updateColor(myPlanet);
     }
+    myPlanet.updateVolume();
   }
 
   void onDraw(Graphics& g) {
@@ -96,15 +94,12 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.color(1, 1, 1);
     g.scale(scaleFactor);
     myPlanet.draw(g);
-    for (auto& b : planets){
-      if(b.rad > 0){
+    for (auto& b : planets) {
+      if (b.rad > 0) {
         b.draw(g);
       }
     }
-
   }
-
-
 };
 
 int main() {
