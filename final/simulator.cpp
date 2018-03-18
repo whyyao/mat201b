@@ -186,7 +186,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   virtual void onSound(AudioIOData& io) {
     aSoundSource.pose(nav());
     while (io()) {
-      //aSoundSource.writeSample(bgPlayer());
+      aSoundSource.writeSample(bgPlayer());
       aSoundSource.writeSample(absorbPlayer());
       //io.out(0) = io.out(1) = bgPlayer();
     }
