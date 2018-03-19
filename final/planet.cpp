@@ -65,9 +65,9 @@ struct Planet {
 
   // absorb with animate according with speed
   void absorb(Planet& otherPlanet) {
-    //float absorbtionSpeed = speed + otherPlanet.speed;
+    float absorbtionSpeed = speed + otherPlanet.speed;
     Vec3f diff = (rad - otherPlanet.rad);
-    float deltaVolume = diff.mag()*(volume+otherPlanet.volume)*0.003;
+    float deltaVolume = diff.mag()*(volume+otherPlanet.volume)*absorbtionSpeed;
     // cout<<"devolume"<<deltaVolume<<endl;
     // cout<<"volume"<<volume<<endl;
     volume += deltaVolume;
@@ -91,7 +91,7 @@ struct mePlanet : Planet {
     // has a default speed and deacceleration when click on mouse
     velocity.zero();
     speed = (0.01);
-    acceleration = Vec3f(-0.05, -0.05, -0.05);
+    acceleration = Vec3f(-0.02, -0.02, -0.02);
     // default size and redraw mesh
     rad = sphereRadius;
     mesh.reset();
@@ -115,6 +115,13 @@ struct mePlanet : Planet {
     q.normalize();
     position = q.rotate(position);
   }
+
+  void clicked(){
+    volume -= 50;
+    updateVolume();
+  }
+
+ 
 };
 
 struct enPlanet : Planet {

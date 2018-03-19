@@ -116,7 +116,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
     //check if lose
     if(myPlanet.volume<0){
-      usleep(1000);
+      //usleep(3000);
       simulate = false;
 
       if(gameRestart == true){
@@ -153,7 +153,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         cross(Vec3f(r(placeholderSize)), myPlanet.position).normalize();
     myPlanet.velocity = newVelocity;
     myPlanet.speed = 0.015;
-
+    myPlanet.clicked();
     savePos = r(placeholderSize);
     // myPlanet.speed = 0.01;
   }
