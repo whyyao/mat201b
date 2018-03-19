@@ -18,6 +18,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
   Material material;
   Light light;
+  Texture gameoverText;
 
   vector<enPlanet> planets;
 
@@ -50,6 +51,15 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
 
     bgTexture.allocate(image.array());
+  
+    if (image.load(fullPathOrDie("gameover.png"))) {
+      cout << "Read image from " << endl;
+    } else {
+      cout << "Failed to read image from "
+           << "!!!" << endl;
+      exit(-1);
+    }
+    gameoverText.allocate(image.array());
     gameRestart = false;
     // initial pos/light/lens
     light.pos(0, 0, -200);
@@ -60,7 +70,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
     background(Color(0.07));
     initWindow();
-
+App::background(Color(0.7, 1.0));
     // audio
     bgPlayer.load(fullPathOrDie("bg.wav").c_str());
     absorbPlayer.load(fullPathOrDie("absorb.wav").c_str());
@@ -153,7 +163,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         cross(Vec3f(r(placeholderSize)), myPlanet.position).normalize();
     myPlanet.velocity = newVelocity;
     myPlanet.speed = 0.015;
-    myPlanet.clicked();
+    //myPlanet.clicked();
     savePos = r(placeholderSize);
     // myPlanet.speed = 0.01;
   }
@@ -162,21 +172,35 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     g.lighting(false);  // turn off lighting
     g.depthMask(
         false);  // disable depth buffer, so that background will be drawn over
-
+    g.blending(true);
+    g.blendModeTrans();
     g.pushMatrix();
     g.translate(nav().pos());
     g.rotate(180, 0, 0, 1);
     bgTexture.bind();
     g.color(1, 1, 1);
-    g.draw(bgMesh);
+    //g.draw(bgMesh);
     bgTexture.unbind();
     g.popMatrix();
+
+    if(myPlanet.volume <= 0 ){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(2,2,2));
+      g.rotate(Quatd::getBillboardRotation((myPlanet.position - nav().pos()), nav().uu()));
+      //g.rotate(Quatd::getBillboardRotation(myPlanet.position, nav().uu()));
+      g.scale(50);
+      gameoverText.quad(g);
+      g.popMatrix();
+    }
+   
+
+    g.blending(false);
 
     g.depthMask(true);  // turn depth mask back on
 
     material();
     light();
-    // bgTexture.quad(g);
+    //bgTexture.quad(g);
     g.scale(scaleFactor);
     myPlanet.draw(g);
     for (auto& b : planets) {
@@ -188,6 +212,8 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     addCone(m);
     g.translate(savePos);
     g.draw(m);
+
+   
   }
 
   void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
@@ -199,8 +225,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         cout<<"l is pressed"<<endl;
         break;
       case 'o':
+        simulate = true;  
         gameRestart = !gameRestart;
-        simulate = true;
+        
         break;
     }
   }

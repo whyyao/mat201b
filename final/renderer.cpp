@@ -14,6 +14,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Light light;
   vector<enPlanet> planets;
 
+  Texture gameoverText;
+
   mePlanet myPlanet;
   bool simulate = true;
 
@@ -35,6 +37,15 @@ struct MyApp : OmniStereoGraphicsRenderer {
     }
 
     bgTexture.allocate(image.array());
+
+     if (image.load(fullPathOrDie("gameover.png"))) {
+      cout << "Read image from " << endl;
+    } else {
+      cout << "Failed to read image from "
+           << "!!!" << endl;
+      exit(-1);
+    }
+    gameoverText.allocate(image.array());
 
     // initial pos/light/lens
     light.pos(0, 0, 0);
@@ -74,6 +85,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
     //// disable depth buffer, so that background will be drawn over
     g.depthMask(false);
 
+  g.blending(true);
+    g.blendModeTrans();
     g.pushMatrix();
     g.translate(nav().pos());
     g.rotate(180, 0, 0, 1);
@@ -83,7 +96,17 @@ struct MyApp : OmniStereoGraphicsRenderer {
     bgTexture.unbind();
     g.popMatrix();
 
+      if(myPlanet.volume <= 0 ){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(2,2,2));
+      g.scale(50);
+      g.rotate(Quatd::getBillboardRotation((myPlanet.position - nav().pos()), nav().uu()));
+      gameoverText.quad(g);
+      g.popMatrix();
+    }
+     g.blending(false);
     g.depthMask(true);  // turn depth mask back on
+   
     // g.lighting(true);
 
     // material();
