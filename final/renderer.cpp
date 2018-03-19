@@ -26,7 +26,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
-    if (image.load(fullPathOrDie("cell.jpg"))) {
+    if (image.load(fullPathOrDie("cell2.jpg"))) {
       cout << "Read image from " << endl;
     } else {
       cout << "Failed to read image from "
@@ -47,6 +47,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
   }
 
   void onAnimate(double dt) {
+    nav().pos(0,0,0);
     if (taker.get(*state) > 0) pose = state->pose;
 
     for (unsigned i = 0; i < planets.size(); i++) {
@@ -56,7 +57,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
     myPlanet.position = state->myPosition;
     myPlanet.volume = state->myVol;
 
-    nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
+    //nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
     for (auto& p : planets) {
       p.updateVolume();

@@ -65,8 +65,9 @@ struct Planet {
 
   // absorb with animate according with speed
   void absorb(Planet& otherPlanet) {
-    float absorbtionSpeed = speed + otherPlanet.speed;
-    float deltaVolume = absorbtionSpeed * 50000;
+    //float absorbtionSpeed = speed + otherPlanet.speed;
+    Vec3f diff = (rad - otherPlanet.rad);
+    float deltaVolume = diff.mag()*(volume+otherPlanet.volume)*0.003;
     // cout<<"devolume"<<deltaVolume<<endl;
     // cout<<"volume"<<volume<<endl;
     volume += deltaVolume;
@@ -110,7 +111,7 @@ struct mePlanet : Planet {
 
     Quatf q;
     q.fromAxisAngle(speed, velocity);
-    speed *= 0.9;
+    speed *= 0.97;
     q.normalize();
     position = q.rotate(position);
   }

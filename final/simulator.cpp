@@ -23,6 +23,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
   mePlanet myPlanet;
   bool simulate = true;
+  bool gameRestart = false;
 
   Vec3f savePos;
 
@@ -40,7 +41,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     addSphereWithTexcoords(bgMesh);
     // load image into texture print out error and exit if failure
     Image image;
-    if (image.load(fullPathOrDie("cell.jpg"))) {
+    if (image.load(fullPathOrDie("cell2.jpg"))) {
       cout << "Read image from " << endl;
     } else {
       cout << "Failed to read image from "
@@ -49,9 +50,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
 
     bgTexture.allocate(image.array());
-
+    gameRestart = false;
     // initial pos/light/lens
-    light.pos(0, 0, 0);
+    light.pos(0, 0, -200);
     nav().pos(0, 0, 0);
     lens().far(400);
 
@@ -78,7 +79,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   void onAnimate(double dt) {
     while (InterfaceServerClient::oscRecv().recv())
       ;  // XXX
-    // nav().pos(0,0,0);
+    nav().pos(0,0,0);
 
     // pressed s to pause/resume the game
     if (!simulate) return;
@@ -117,9 +118,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     if(myPlanet.volume<0){
       usleep(1000);
       simulate = false;
-      state->simulate = simulate;
 
-      //restart();
+      if(gameRestart == true){
+        restart();
+      }
     }
 
     //check if win
@@ -192,8 +194,13 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     switch (k.key()) {
       default:
         break;
-      case 's':
+      case 'l':
         simulate = !simulate;
+        cout<<"l is pressed"<<endl;
+        break;
+      case 'o':
+        gameRestart = !gameRestart;
+        simulate = true;
         break;
     }
   }
@@ -209,10 +216,17 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     // scene()->render(io);
   }
 
-  // void restart(){ 
-  // myPlanet = mePlanet();
-  // planets.resize();
-//}
+  void restart(){ 
+    //simulate = true;
+    //myPlanet = mePlanet();
+    planets.clear();
+    planets.resize(particleCount);
+    myPlanet.rad = sphereRadius;
+    myPlanet.mesh.reset();
+    addSphere(myPlanet.mesh, myPlanet.rad);
+    myPlanet.mesh.generateNormals();
+    myPlanet.volume = 3.14 * 4 / 3 * (myPlanet.rad) * (myPlanet.rad) * (myPlanet.rad);
+  }
 
 };
 
