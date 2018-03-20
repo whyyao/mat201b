@@ -227,7 +227,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
     if(ifWin == true){
       g.pushMatrix();
-      g.translate(myPlanet.position + Vec3f(50,50,50));
+      g.translate(myPlanet.position + Vec3f(50,50,5git 0));
       Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
       Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
       g.rotate(rot);
