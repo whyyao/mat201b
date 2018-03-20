@@ -15,38 +15,21 @@ struct Planet {
 
   Vec3f position, velocity, acceleration;
   Color c;
-  float volume, rad;
-  bool myself;
+  float volume, rad, speed;
   Mesh mesh;
-  float speed;
+  
+  Planet() {}
 
-  // default - not a "me" planet
-  Planet() {
-    // setting up basic info
-    myself = false;
-    velocity = r();
-    position = (r() * placeholderSize).normalize(placeholderSize);
-    speed = rnd::uniform(0.005);
-    rad = (rnd::uniformS() * 5) + sphereRadius;
-    rad += 2;
-    volume = 3.14 * 4 / 3 * (rad) * (rad) * (rad);
-
-    // adding mesh
-    addSphere(mesh, rad);
-    mesh.generateNormals();
-    c = HSV(0, 0.7, 1);
-  }
-
-  // use to set up "me" planet info
+  //update color according to the volume
   void updateColor(Planet my) {
-    if (myself == false) {
       if (my.volume > volume) {
         c = HSV(120 / 360.0f, 1, 1);
       } else {
         c = HSV(0, 0.7, 1);
       }
-    }
   }
+
+  //called in onDraw
   void draw(Graphics& g) {
     g.pushMatrix();
     g.translate(position);
@@ -55,7 +38,7 @@ struct Planet {
     g.popMatrix();
   }
 
-  // function to see if otherPlanet is colliding with self
+  // see if otherPlanet is colliding with self
   bool ifCollide(Planet otherPlanet) {
     if ((position - otherPlanet.position).mag() <= (rad + otherPlanet.rad)) {
       return true;
@@ -68,14 +51,12 @@ struct Planet {
     float absorbtionSpeed = speed + otherPlanet.speed;
     Vec3f diff = (rad - otherPlanet.rad);
     float deltaVolume = diff.mag()*(volume+otherPlanet.volume)*absorbtionSpeed;
-    // cout<<"devolume"<<deltaVolume<<endl;
-    // cout<<"volume"<<volume<<endl;
     volume += deltaVolume;
     otherPlanet.volume -= deltaVolume;
   }
 
-  // update rad with new volume
-  void updateVolume() {
+  //update rad with new volume
+  void updateRadius() {
     rad = pow((volume * 3 / 4 / 3.14), 1.0 / 3);
     if (rad > 0) {
       mesh.reset();
@@ -87,28 +68,21 @@ struct Planet {
 
 struct mePlanet : Planet {
   mePlanet() : Planet() {
-    myself = true;
-    // has a default speed and deacceleration when click on mouse
     velocity.zero();
+    position = (Vec3f(0, 0, -200)).normalize(placeholderSize);
     speed = (0.01);
     acceleration = Vec3f(-0.02, -0.02, -0.02);
-    // default size and redraw mesh
     rad = sphereRadius;
-    mesh.reset();
+    volume = 3.14 * 4 / 3 * (rad) * (rad) * (rad);
     addSphere(mesh, rad);
     mesh.generateNormals();
-    // blue color
+
     c = HSV(200.0 / 360.0f, 1, 1);
-    // always starts at the default position
-    position = (Vec3f(0, 0, -200)).normalize(placeholderSize);
   }
 
+  //used for moving
   void update(Planet my) {
-    // used to rotate and updated the position on the surface
-    updateVolume();
-
-    // cout<<velocity<<endl;
-
+    updateRadius();
     Quatf q;
     q.fromAxisAngle(speed, velocity);
     speed *= 0.97;
@@ -118,26 +92,29 @@ struct mePlanet : Planet {
 
   void clicked(){
     volume -= 50;
-    updateVolume();
+    updateRadius();
   }
 
- 
 };
 
 struct enPlanet : Planet {
-  enPlanet() : Planet() {}
+  enPlanet() : Planet() {
+    velocity = r();
+    position = (r() * placeholderSize).normalize(placeholderSize);
+    speed = rnd::uniform(0.006);
+    rad = (rnd::uniformS() * 5) + sphereRadius;
+    rad += 2;
+    volume = 3.14 * 4 / 3 * (rad) * (rad) * (rad);
+    addSphere(mesh, rad);
+    mesh.generateNormals();
+  }
 
   void update(Planet my) {
-    // used to rotate and updated the position on the surface
-    updateVolume();
-
-    // cout<<velocity<<endl;
+    updateRadius();
     Quatf q;
     q.fromAxisAngle(speed, velocity);
     q.normalize();
     position = q.rotate(position);
-    // if planet volume is greater, change color to red
-    // if not, change color to green
     updateColor(my);
   }
 

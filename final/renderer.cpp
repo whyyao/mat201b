@@ -1,10 +1,9 @@
 #include "common.h"
-
 #include "alloutil/al_OmniStereoGraphicsRenderer.hpp"
 
 using namespace al;
 using namespace std;
-// Mesh sphere;
+
 
 struct MyApp : OmniStereoGraphicsRenderer {
   cuttlebone::Taker<State> taker;
@@ -12,16 +11,17 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   Material material;
   Light light;
+
   vector<enPlanet> planets;
-
-  Texture gameoverText;
-
   mePlanet myPlanet;
   bool simulate = true;
 
-  // background related
+  Vec3f pointer;
+  
   Mesh bgMesh;
   Texture bgTexture;
+  Texture gameoverText;
+  Texture winText;
 
   MyApp() {
     memset(state, 0, sizeof(State));
@@ -29,25 +29,23 @@ struct MyApp : OmniStereoGraphicsRenderer {
     // load image into texture print out error and exit if failure
     Image image;
     if (image.load(fullPathOrDie("cell2.jpg"))) {
-      cout << "Read image from " << endl;
+      bgTexture.allocate(image.array());
     } else {
-      cout << "Failed to read image from "
-           << "!!!" << endl;
       exit(-1);
     }
 
-    bgTexture.allocate(image.array());
-
-     if (image.load(fullPathOrDie("gameover.png"))) {
-      cout << "Read image from " << endl;
+    if (image.load(fullPathOrDie("gameover.png"))) {
+      gameoverText.allocate(image.array());
     } else {
-      cout << "Failed to read image from "
-           << "!!!" << endl;
       exit(-1);
     }
-    gameoverText.allocate(image.array());
 
-    // initial pos/light/lens
+    if (image.load(fullPathOrDie("win.png"))){
+      winText.allocate(image.array());
+    }else{
+      exit(-1);
+    }
+
     light.pos(0, 0, 0);
     nav().pos(0, 0, 0);
     lens().near(0.1);
@@ -71,10 +69,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
     //nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
     for (auto& p : planets) {
-      p.updateVolume();
+      p.updateRadius();
       p.updateColor(myPlanet);
     }
-    myPlanet.updateVolume();
+    myPlanet.updateRadius();
   }
 
   void onDraw(Graphics& g) {
