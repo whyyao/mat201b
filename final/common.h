@@ -35,6 +35,7 @@ struct State {
   Vec3f pointer;
   Pose pose;
   int mode;
+  int bgmode;
 };
 
 #endif

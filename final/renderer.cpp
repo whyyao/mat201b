@@ -20,10 +20,12 @@ struct MyApp : OmniStereoGraphicsRenderer {
   
   Mesh bgMesh;
   Texture bgTexture;
+  Texture bg2Texture;
   Texture gameoverText;
   Texture winText;
 
   int mode = 1;
+  int bgmode = 1;
 
   MyApp() {
     memset(state, 0, sizeof(State));
@@ -32,6 +34,12 @@ struct MyApp : OmniStereoGraphicsRenderer {
     Image image;
     if (image.load(fullPathOrDie("cell2.jpg"))) {
       bgTexture.allocate(image.array());
+    } else {
+      exit(-1);
+    }
+
+    if (image.load(fullPathOrDie("cell.jpg"))) {
+      bg2Texture.allocate(image.array());
     } else {
       exit(-1);
     }
@@ -72,7 +80,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
     myPlanet.position = state->myPosition;
     myPlanet.volume = state->myVol;
     pointer =  state->pointer;
-   
+    bgmode = state->bgmode;
 
     for (auto& p : planets) {
       p.updateRadius();
@@ -93,10 +101,17 @@ struct MyApp : OmniStereoGraphicsRenderer {
     g.pushMatrix();
     g.translate(nav().pos());
     g.rotate(180, 0, 0, 1);
-    bgTexture.bind();
-    g.color(1, 1, 1);
-    g.draw(bgMesh);
-    bgTexture.unbind();
+    if(bgmode == 1){
+      bgTexture.bind();
+      g.color(1, 1, 1);
+      g.draw(bgMesh);
+      bgTexture.unbind();
+    }else{
+      bg2Texture.bind();
+      g.color(1, 1, 1);
+      g.draw(bgMesh);
+      bgTexture.unbind();
+    }
     g.popMatrix();
 
     lose(g);

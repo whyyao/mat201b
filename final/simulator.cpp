@@ -29,10 +29,12 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
 
   Mesh bgMesh;
   Texture bgTexture;
+  Texture bg2Texture;
   Texture gameoverText;
   Texture winText;
 
   int mode = 1;
+  int bgmode = 1;
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
         InterfaceServerClient(Simulator::defaultInterfaceServerIP()) {
@@ -42,6 +44,12 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     Image image;
     if (image.load(fullPathOrDie("cell2.jpg"))) {
       bgTexture.allocate(image.array());
+    } else {
+      exit(-1);
+    }
+
+    if (image.load(fullPathOrDie("cell.jpg"))) {
+      bg2Texture.allocate(image.array());
     } else {
       exit(-1);
     }
@@ -139,6 +147,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     state->pose = nav();
     state->pointer = pointer;
     state->mode = mode;
+    state->bgmode = bgmode;
     maker.set(*state);
   }
 
@@ -160,10 +169,17 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     g.pushMatrix();
     g.translate(nav().pos());
     g.rotate(180, 0, 0, 1);
-    bgTexture.bind();
-    g.color(1, 1, 1);
-    g.draw(bgMesh);
-    bgTexture.unbind();
+    if(bgmode == 1){
+      bgTexture.bind();
+      g.color(1, 1, 1);
+      g.draw(bgMesh);
+      bgTexture.unbind();
+    }else{
+      bg2Texture.bind();
+      g.color(1, 1, 1);
+      g.draw(bgMesh);
+      bgTexture.unbind();
+    }
     g.popMatrix();
     lose(g);
     win(g);
@@ -197,6 +213,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
           gameRestart = !gameRestart;
           simulate = true; 
         }
+        break;
       case 'm':
         if(mode == 1){
           mode = 2;
@@ -204,6 +221,13 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
           mode = 1;
         }
         
+        break;
+      case 'b':
+        if(bgmode == 1){
+          bgmode = 2;
+        }else{
+          bgmode = 1;
+        }
         break;
     }
   }
