@@ -191,7 +191,6 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
       case 'o':
         simulate = true;  
         gameRestart = !gameRestart;
-        
         break;
     }
   }
@@ -207,7 +206,8 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     // scene()->render(io);
   }
 
-  void restart(){ 
+  void restart(){
+    gameRestart = false;
     planets.clear();
     planets.resize(particleCount);
     myPlanet.rad = sphereRadius;
@@ -215,6 +215,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     addSphere(myPlanet.mesh, myPlanet.rad);
     myPlanet.mesh.generateNormals();
     myPlanet.volume = 3.14 * 4 / 3 * (myPlanet.rad) * (myPlanet.rad) * (myPlanet.rad);
+    simulate = true;
   }
 
   void win(Graphics& g){
@@ -227,7 +228,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
     if(ifWin == true){
       g.pushMatrix();
-      g.translate(myPlanet.position + Vec3f(50,50,5git 0));
+      g.translate(myPlanet.position + Vec3f(50,50, 50));
       Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
       Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
       g.rotate(rot);
