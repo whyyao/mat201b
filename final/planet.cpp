@@ -89,7 +89,7 @@ struct mePlanet : Planet {
   }
 
   void clicked(){
-    volume -= 50;
+    volume -= 100;
     updateRadius();
   }
 

@@ -32,6 +32,7 @@ struct State {
   float volume[particleCount];
   Vec3f myPosition;
   float myVol;
+  Vec3f pointer;
 };
 
 #endif

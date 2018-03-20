@@ -65,6 +65,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
     }
     myPlanet.position = state->myPosition;
     myPlanet.volume = state->myVol;
+    pointer =  state->pointer;
 
     for (auto& p : planets) {
       p.updateRadius();
@@ -107,6 +108,10 @@ struct MyApp : OmniStereoGraphicsRenderer {
         b.draw(g);
       }
     }
+    Mesh& m = g.mesh();
+    addCone(m);
+    g.translate(pointer);
+    g.draw(m);
   }
 
   void win(Graphics& g){

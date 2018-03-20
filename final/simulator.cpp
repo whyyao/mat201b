@@ -135,6 +135,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
     state->myPosition = myPlanet.position;
     state->myVol = myPlanet.volume;
+    state->pointer = pointer;
     maker.set(*state);
   }
 
@@ -145,7 +146,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     myPlanet.velocity = newVelocity;
     myPlanet.speed = 0.015;
     pointer = r(placeholderSize);
-  
+    myPlanet.clicked();
   }
 
   void onDraw(Graphics& g) {
