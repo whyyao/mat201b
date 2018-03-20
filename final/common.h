@@ -33,6 +33,8 @@ struct State {
   Vec3f myPosition;
   float myVol;
   Vec3f pointer;
+  Pose pose;
+  int mode;
 };
 
 #endif

@@ -32,6 +32,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
   Texture gameoverText;
   Texture winText;
 
+  int mode = 1;
   MyApp()
       : maker(Simulator::defaultBroadcastIP()),
         InterfaceServerClient(Simulator::defaultInterfaceServerIP()) {
@@ -135,7 +136,9 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
     state->myPosition = myPlanet.position;
     state->myVol = myPlanet.volume;
+    state->pose = nav();
     state->pointer = pointer;
+    state->mode = mode;
     maker.set(*state);
   }
 
@@ -193,6 +196,12 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         if(simulate == false){
           gameRestart = !gameRestart;
           simulate = true; 
+        }
+      case 'm':
+        if(mode == 1){
+          mode = 2;
+        }else{
+          mode = 1;
         }
         
         break;

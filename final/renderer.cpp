@@ -23,6 +23,8 @@ struct MyApp : OmniStereoGraphicsRenderer {
   Texture gameoverText;
   Texture winText;
 
+  int mode = 1;
+
   MyApp() {
     memset(state, 0, sizeof(State));
     addSphereWithTexcoords(bgMesh);
@@ -57,7 +59,11 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   void onAnimate(double dt) {
     nav().pos(0,0,0);
-    taker.get(*state);
+    if (taker.get(*state) > 0)  mode = state->mode;
+    
+    if(mode == 2){
+      pose = state->pose;
+    }
 
     for (unsigned i = 0; i < planets.size(); i++) {
       planets[i].position = state->position[i];
@@ -66,12 +72,14 @@ struct MyApp : OmniStereoGraphicsRenderer {
     myPlanet.position = state->myPosition;
     myPlanet.volume = state->myVol;
     pointer =  state->pointer;
+   
 
     for (auto& p : planets) {
       p.updateRadius();
       p.updateColor(myPlanet);
     }
     myPlanet.updateRadius();
+
   }
 
   void onDraw(Graphics& g) {
