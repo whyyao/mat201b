@@ -58,7 +58,7 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
    
     gameRestart = false;
-    light.pos(0, 0, -200);
+    light.pos(0, 0, -100);
     nav().pos(0, 0, 0);
     lens().far(400);
 

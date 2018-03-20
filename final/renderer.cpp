@@ -46,7 +46,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
       exit(-1);
     }
 
-    light.pos(0, 0, 0);
+    light.pos(0, 0, -100);
     nav().pos(0, 0, 0);
     lens().near(0.1);
     lens().far(5000);
