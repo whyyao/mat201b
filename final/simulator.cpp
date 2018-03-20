@@ -189,8 +189,11 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         cout<<"l is pressed"<<endl;
         break;
       case 'o':
-        simulate = true;  
-        gameRestart = !gameRestart;
+        if(simulate == false){
+          gameRestart = !gameRestart;
+          simulate = true; 
+        }
+        
         break;
     }
   }
