@@ -135,7 +135,6 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     }
     state->myPosition = myPlanet.position;
     state->myVol = myPlanet.volume;
-    state->pose = nav();
     maker.set(*state);
   }
 
@@ -162,45 +161,12 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     g.draw(bgMesh);
     bgTexture.unbind();
     g.popMatrix();
-
-    if(myPlanet.volume <= 0 ){
-      g.pushMatrix();
-      g.translate(myPlanet.position);
-      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
-      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
-      g.rotate(rot);
-      g.scale(100);
-      gameoverText.quad(g);
-      g.popMatrix();
-    }
-
-    bool ifWin = true;
-    for(auto& planet: planets){
-      if (planet.volume > 0){
-        ifWin = false;
-        break;
-      }
-    }
-    if(ifWin == true){
-      g.pushMatrix();
-      g.translate(myPlanet.position);
-      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
-      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
-      g.rotate(rot);
-      g.scale(100);
-      winText.quad(g);
-      g.popMatrix();
-    }
-   
-
-    
+    lose(g);
+    win(g);
     g.blending(false);
-
-    g.depthMask(true);  // turn depth mask back on
-
+    g.depthMask(true); 
     material();
     light();
-
     g.scale(scaleFactor);
     myPlanet.draw(g);
     for (auto& b : planets) {
@@ -208,13 +174,10 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
         b.draw(g);
       }
     }
-
     Mesh& m = g.mesh();
     addCone(m);
     g.translate(pointer);
     g.draw(m);
-
-   
   }
 
   void onKeyDown(const ViewpointWindow&, const Keyboard& k) {
@@ -252,6 +215,49 @@ struct MyApp : App, AlloSphereAudioSpatializer, InterfaceServerClient {
     addSphere(myPlanet.mesh, myPlanet.rad);
     myPlanet.mesh.generateNormals();
     myPlanet.volume = 3.14 * 4 / 3 * (myPlanet.rad) * (myPlanet.rad) * (myPlanet.rad);
+  }
+
+  void win(Graphics& g){
+    bool ifWin = true;
+    for(auto& planet: planets){
+      if (planet.volume > 0){
+        ifWin = false;
+        break;
+      }
+    }
+    if(ifWin == true){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(50,50,50));
+      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
+      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
+      g.rotate(rot);
+      g.scale(100);
+      winText.quad(g);
+      g.popMatrix();
+    }
+  }
+
+  void lose(Graphics& g){
+    bool ifLose = true;
+    for(auto& planet: planets){
+      if(planet.volume < myPlanet.volume){
+        ifLose = false;
+      }
+    }
+    if(myPlanet.volume < 0 ){
+      ifLose = true;
+    }
+
+    if(ifLose){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(10,10,10));
+      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
+      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
+      g.rotate(rot);
+      g.scale(100);
+      gameoverText.quad(g);
+      g.popMatrix();
+    }
   }
 
 };

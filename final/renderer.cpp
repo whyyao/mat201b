@@ -57,7 +57,7 @@ struct MyApp : OmniStereoGraphicsRenderer {
 
   void onAnimate(double dt) {
     nav().pos(0,0,0);
-    if (taker.get(*state) > 0) pose = state->pose;
+    taker.get(*state);
 
     for (unsigned i = 0; i < planets.size(); i++) {
       planets[i].position = state->position[i];
@@ -65,8 +65,6 @@ struct MyApp : OmniStereoGraphicsRenderer {
     }
     myPlanet.position = state->myPosition;
     myPlanet.volume = state->myVol;
-
-    //nav().faceToward(myPlanet.position, Vec3d(0, 1, 0), 0.05);
 
     for (auto& p : planets) {
       p.updateRadius();
@@ -79,11 +77,9 @@ struct MyApp : OmniStereoGraphicsRenderer {
     shader().uniform("lighting", 0.0);
     shader().uniform("texture", 1.0);
 
-    g.lighting(false);  // turn off lighting
-    //// disable depth buffer, so that background will be drawn over
+    g.lighting(false); 
     g.depthMask(false);
-
-  g.blending(true);
+    g.blending(true);
     g.blendModeTrans();
     g.pushMatrix();
     g.translate(nav().pos());
@@ -94,25 +90,15 @@ struct MyApp : OmniStereoGraphicsRenderer {
     bgTexture.unbind();
     g.popMatrix();
 
-      if(myPlanet.volume <= 0 ){
-      g.pushMatrix();
-      g.translate(myPlanet.position + Vec3f(2,2,2));
-      g.scale(50);
-      g.rotate(Quatd::getBillboardRotation((myPlanet.position - nav().pos()), nav().uu()));
-      gameoverText.quad(g);
-      g.popMatrix();
-    }
-     g.blending(false);
-    g.depthMask(true);  // turn depth mask back on
-   
-    // g.lighting(true);
-
-    // material();
+    lose(g);
+    win(g);
+    g.blending(false);
+    g.depthMask(true); 
     light();
+
     shader().uniform("lighting", 0.5);
     shader().uniform("texture", 0.0);
 
-    // bgTexture.quad(g);
     g.color(1, 1, 1);
     g.scale(scaleFactor);
     myPlanet.draw(g);
@@ -120,6 +106,49 @@ struct MyApp : OmniStereoGraphicsRenderer {
       if (b.rad > 0) {
         b.draw(g);
       }
+    }
+  }
+
+  void win(Graphics& g){
+    bool ifWin = true;
+    for(auto& planet: planets){
+      if (planet.volume > 0){
+        ifWin = false;
+        break;
+      }
+    }
+    if(ifWin == true){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(50,50,50));
+      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
+      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
+      g.rotate(rot);
+      g.scale(100);
+      winText.quad(g);
+      g.popMatrix();
+    }
+  }
+
+  void lose(Graphics& g){
+    bool ifLose = true;
+    for(auto& planet: planets){
+      if(planet.volume < myPlanet.volume){
+        ifLose = false;
+      }
+    }
+    if(myPlanet.volume < 0 ){
+      ifLose = true;
+    }
+
+    if(ifLose){
+      g.pushMatrix();
+      g.translate(myPlanet.position + Vec3f(10,10,10));
+      Vec3d forward = Vec3d(nav().pos() - myPlanet.position).normalize();
+      Quatd rot = Quatd::getBillboardRotation(forward, nav().uu());
+      g.rotate(rot);
+      g.scale(100);
+      gameoverText.quad(g);
+      g.popMatrix();
     }
   }
 };

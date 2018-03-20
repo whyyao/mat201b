@@ -6,7 +6,6 @@ using namespace al;
 using namespace std;
 
 Vec3f r() { return Vec3f(rnd::uniformS(), rnd::uniformS(), rnd::uniformS()); }
-// Vec3f toVec(Quatf q) { return Vec3f(q.x, q.y, q.z); }
 
 struct Planet {
   const unsigned particleCount = 100;
@@ -50,7 +49,7 @@ struct Planet {
   void absorb(Planet& otherPlanet) {
     float absorbtionSpeed = speed + otherPlanet.speed;
     Vec3f diff = (rad - otherPlanet.rad);
-    float deltaVolume = diff.mag()*(volume+otherPlanet.volume)*absorbtionSpeed;
+    float deltaVolume = (pow(diff.mag(),2.5)) + absorbtionSpeed * 10000;
     volume += deltaVolume;
     otherPlanet.volume -= deltaVolume;
   }
@@ -76,7 +75,6 @@ struct mePlanet : Planet {
     volume = 3.14 * 4 / 3 * (rad) * (rad) * (rad);
     addSphere(mesh, rad);
     mesh.generateNormals();
-
     c = HSV(200.0 / 360.0f, 1, 1);
   }
 
